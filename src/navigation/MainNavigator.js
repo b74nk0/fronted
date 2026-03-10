@@ -13,7 +13,7 @@ import EditarUsuarioScreen from '../screens/admin/EditarUsuarioScreen';
 import AdministracionEscolarScreen from '../screens/admin/AdministracionEscolarScreen';
 import ConfiguracionScreen from '../screens/admin/ConfiguracionScreen';
 
-// Screens - Config (subcarpeta de admin)
+// Screens - Config
 import ConfigInstitucionScreen from '../screens/admin/config/ConfigInstitucionScreen';
 import ConfigPeriodosScreen from '../screens/admin/config/ConfigPeriodosScreen';
 import ConfigSubPeriodosScreen from '../screens/admin/config/ConfigSubPeriodosScreen';
@@ -22,8 +22,11 @@ import ConfigRolesScreen from '../screens/admin/config/ConfigRolesScreen';
 import ConfigTiposDocumentoScreen from '../screens/admin/config/ConfigTiposDocumentoScreen';
 import ConfigGeneralScreen from '../screens/admin/config/ConfigGeneralScreen';
 
-// Screens - Academic
+// Screens - Académico
 import GestionAcademicaScreen from '../screens/academic/GestionAcademicaScreen';
+import MateriasScreen from '../screens/academic/config/MateriasScreen';
+import PlanesEstudioScreen from '../screens/academic/config/PlanesEstudioScreen';
+import CompetenciasScreen from '../screens/academic/config/CompetenciasScreen';
 import DocumentacionScreen from '../screens/academic/DocumentacionScreen';
 import DocentesScreen from '../screens/academic/DocentesScreen';
 import EstudiantesScreen from '../screens/academic/EstudiantesScreen';
@@ -94,18 +97,6 @@ const MainNavigator = () => {
           />
 
           <Drawer.Screen
-            name="CrearUsuario"
-            component={CrearUsuarioScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Crear Usuario' }}
-          />
-
-          <Drawer.Screen
-            name="EditarUsuario"
-            component={EditarUsuarioScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Editar Usuario' }}
-          />
-
-          <Drawer.Screen
             name="GestionAcademica"
             component={GestionAcademicaScreen}
             options={{
@@ -149,43 +140,66 @@ const MainNavigator = () => {
             }}
           />
 
+          {/* Pantallas ocultas - Usuarios */}
+          <Drawer.Screen
+            name="CrearUsuario"
+            component={CrearUsuarioScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Crear Usuario' }}
+          />
+          <Drawer.Screen
+            name="EditarUsuario"
+            component={EditarUsuarioScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Editar Usuario' }}
+          />
+
+          {/* Pantallas ocultas - Gestión Académica */}
+          <Drawer.Screen
+            name="Materias"
+            component={MateriasScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Materias' }}
+          />
+          <Drawer.Screen
+            name="PlanesEstudio"
+            component={PlanesEstudioScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Planes de Estudio' }}
+          />
+          <Drawer.Screen
+            name="Competencias"
+            component={CompetenciasScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Competencias y Logros' }}
+          />
+
           {/* Pantallas ocultas - Configuración */}
           <Drawer.Screen
             name="ConfigInstitucion"
             component={ConfigInstitucionScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Información Institucional' }}
           />
-
           <Drawer.Screen
             name="ConfigPeriodos"
             component={ConfigPeriodosScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Períodos Académicos' }}
           />
-
           <Drawer.Screen
             name="ConfigSubPeriodos"
             component={ConfigSubPeriodosScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Configurar Períodos' }}
           />
-
           <Drawer.Screen
             name="ConfigGrados"
             component={ConfigGradosScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Grados y Niveles' }}
           />
-
           <Drawer.Screen
             name="ConfigRoles"
             component={ConfigRolesScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Roles del Sistema' }}
           />
-
           <Drawer.Screen
             name="ConfigTiposDocumento"
             component={ConfigTiposDocumentoScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Tipos de Documento' }}
           />
-
           <Drawer.Screen
             name="ConfigGeneral"
             component={ConfigGeneralScreen}
@@ -211,10 +225,8 @@ const MainNavigator = () => {
             name="Usuarios"
             component={UsuariosScreen}
             options={{
+              drawerItemStyle: { display: 'none' },
               title: 'Estudiantes',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="people" size={size} color={color} />
-              ),
             }}
           />
           <Drawer.Screen
