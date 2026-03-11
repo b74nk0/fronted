@@ -16,6 +16,12 @@ const MODULOS = [
     descripcion: 'Configuración base de qué y cómo se enseña',
     items: [
       {
+        title: 'Matrículas y Admisiones',
+        icon: 'person-add',
+        color: '#f59e0b',
+        screen: 'Matriculas',
+        description: 'Expedientes, pre-inscripciones y promoción',
+      },{
         title: 'Materias',
         icon: 'book',
         color: '#0284c7',
@@ -42,13 +48,7 @@ const MODULOS = [
     seccion: 'Próximamente',
     descripcion: 'Módulos en desarrollo',
     items: [
-      {
-        title: 'Matrículas y Admisiones',
-        icon: 'person-add',
-        color: '#f59e0b',
-        screen: null,
-        description: 'Expedientes, pre-inscripciones y promoción',
-      },
+      
       {
         title: 'Asistencia y Disciplina',
         icon: 'checkmark-circle',

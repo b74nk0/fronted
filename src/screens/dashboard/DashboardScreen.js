@@ -52,11 +52,11 @@ const isEstudiante = hasRole('ESTUDIANTE');
       description: 'Cursos, materias y docentes',
     },
     {
-      title: 'Finanzas',
+      title: 'Pensiones',
       icon: 'cash',
       color: '#16a34a',
-      screen: 'Finanzas',
-      description: 'Matrículas y pagos',
+      screen: 'Pensiones',
+      description: 'Pensiones y pagos',
     },
     {
       title: 'Administración',
@@ -128,10 +128,10 @@ const isEstudiante = hasRole('ESTUDIANTE');
       description: 'Mi horario de clases',
     },
     {
-      title: 'Finanzas',
+      title: 'Matricula y Pension',
       icon: 'cash',
       color: '#16a34a',
-      screen: 'FinanzasEstudiante',
+      screen: 'MisPensiones',
       description: 'Estado de cuenta',
     },
     {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
@@ -57,6 +57,14 @@ const CrearUsuarioScreen = () => {
     loadCatalogos();
   }, []);
 
+  // Limpiar form cada vez que la pantalla recibe foco
+  useFocusEffect(
+    useCallback(() => {
+      setFormData(FORM_INITIAL);
+      setErrors({});
+    }, [])
+  );
+
   const updateField = (field, value) => {
     setFormData({ ...formData, [field]: value });
     if (errors[field]) setErrors({ ...errors, [field]: null });
@@ -95,7 +103,9 @@ const CrearUsuarioScreen = () => {
     setSaving(true);
     try {
       await usuarioService.crear(formData);
-      navigation.goBack();
+      setFormData(FORM_INITIAL); // ← limpiar
+      setErrors({});
+      navigation.navigate('Usuarios'); // ← ir a Usuarios, no goBack()
       Alert.alert('Éxito', 'Usuario creado correctamente.');
     } catch (error) {
       console.error('Error creando usuario:', error);

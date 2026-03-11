@@ -30,9 +30,11 @@ import CompetenciasScreen from '../screens/academic/config/CompetenciasScreen';
 import DocumentacionScreen from '../screens/academic/DocumentacionScreen';
 import DocentesScreen from '../screens/academic/DocentesScreen';
 import EstudiantesScreen from '../screens/academic/EstudiantesScreen';
+import MatriculasScreen from '../screens/academic/MatriculasScreen';
 
 // Screens - Finance
-import FinanzasScreen from '../screens/finance/FinanzasScreen';
+import PensionesScreen from '../screens/finance/PensionesScreen';
+import MisPensionesScreen from '../screens/finance/MisPensionesScreen';
 
 // Screens - Profile
 import MiPerfilScreen from '../screens/profile/MiPerfilScreen';
@@ -108,10 +110,10 @@ const MainNavigator = () => {
           />
 
           <Drawer.Screen
-            name="Finanzas"
-            component={FinanzasScreen}
+            name="Pensiones"
+            component={PensionesScreen}
             options={{
-              title: 'Matrícula y Finanzas',
+              title: 'Pensiones',
               drawerIcon: ({ color, size }) => (
                 <Ionicons name="cash" size={size} color={color} />
               ),
@@ -167,6 +169,11 @@ const MainNavigator = () => {
             name="Competencias"
             component={CompetenciasScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Competencias y Logros' }}
+          />
+          <Drawer.Screen
+            name="Matriculas"
+            component={MatriculasScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Matrículas' }}
           />
 
           {/* Pantallas ocultas - Configuración */}
@@ -246,8 +253,8 @@ const MainNavigator = () => {
       {isEstudiante && (
         <>
           <Drawer.Screen
-            name="FinanzasEstudiante"
-            component={FinanzasScreen}
+            name="MisPensiones"
+            component={MisPensionesScreen}
             options={{
               title: 'Matrícula y Finanzas',
               drawerIcon: ({ color, size }) => (
