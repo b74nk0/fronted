@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -17,17 +16,17 @@ const DashboardScreen = () => {
   const navigation = useNavigation();
 
   const hasRole = (roleName) => {
-  if (!user?.roles || !Array.isArray(user.roles)) return false;
-  return user.roles.some(role => {
-    const roleStr = typeof role === 'string' ? role : role.nombre;
-    return roleStr?.toLowerCase() === roleName.toLowerCase();
-  });
-};
+    if (!user?.roles || !Array.isArray(user.roles)) return false;
+    return user.roles.some(role => {
+      const roleStr = typeof role === 'string' ? role : role.nombre;
+      return roleStr?.toLowerCase() === roleName.toLowerCase();
+    });
+  };
 
-const isAdmin = hasRole('ADMINISTRADOR');
-const isAdministrativo = hasRole('ADMINISTRATIVO');
-const isDocente = hasRole('DOCENTE');
-const isEstudiante = hasRole('ESTUDIANTE');
+  const isAdmin = hasRole('ADMINISTRADOR');
+  const isAdministrativo = hasRole('ADMINISTRATIVO');
+  const isDocente = hasRole('DOCENTE');
+  const isEstudiante = hasRole('ESTUDIANTE');
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -75,42 +74,42 @@ const isEstudiante = hasRole('ESTUDIANTE');
   ];
 
   const docenteCards = [
-  {
-    title: 'Mis Cursos',
-    icon: 'book',
-    color: colors.primary[600],
-    screen: 'GestionAcademicaDocente',
-    description: 'Ver y gestionar mis cursos',
-  },
-  {
-    title: 'Estudiantes',        // ← nueva card
-    icon: 'people',
-    color: '#0891b2',
-    screen: 'Usuarios',          // ← navega a UsuariosScreen que ya filtra por rol
-    description: 'Ver listado de estudiantes',
-  },
-  {
-    title: 'Evaluaciones',
-    icon: 'clipboard',
-    color: '#9333ea',
-    screen: 'GestionAcademicaDocente',
-    description: 'Crear y calificar evaluaciones',
-  },
-  {
-    title: 'Asistencia',
-    icon: 'checkmark-circle',
-    color: '#16a34a',
-    screen: 'GestionAcademicaDocente',
-    description: 'Tomar asistencia',
-  },
-  {
-    title: 'Documentos',
-    icon: 'document-text',
-    color: '#eab308',
-    screen: 'Documentacion',
-    description: 'Mis documentos',
-  },
-];
+    {
+      title: 'Mis Cursos',
+      icon: 'book',
+      color: colors.primary[600],
+      screen: 'GestionAcademicaDocente',
+      description: 'Ver y gestionar mis cursos',
+    },
+    {
+      title: 'Estudiantes',
+      icon: 'people',
+      color: '#0891b2',
+      screen: 'Usuarios',
+      description: 'Ver listado de estudiantes',
+    },
+    {
+      title: 'Evaluaciones',
+      icon: 'clipboard',
+      color: '#9333ea',
+      screen: 'GestionAcademicaDocente',
+      description: 'Crear y calificar evaluaciones',
+    },
+    {
+      title: 'Asistencia',
+      icon: 'checkmark-circle',
+      color: '#16a34a',
+      screen: 'GestionAcademicaDocente',
+      description: 'Tomar asistencia',
+    },
+    {
+      title: 'Documentos',
+      icon: 'document-text',
+      color: '#eab308',
+      screen: 'Documentacion',
+      description: 'Mis documentos',
+    },
+  ];
 
   const estudianteCards = [
     {
@@ -185,23 +184,29 @@ const isEstudiante = hasRole('ESTUDIANTE');
 
       {/* Quick Stats */}
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
+
+        {/* ── Fecha → navega al Calendario ── */}
+        <TouchableOpacity
+          style={styles.statCard}
+          onPress={() => navigation.navigate('Calendario')}
+          activeOpacity={0.7}
+        >
           <Ionicons name="calendar-outline" size={24} color={colors.primary[600]} />
           <Text style={styles.statValue}>
-            {new Date().toLocaleDateString('es-ES', { 
-              day: 'numeric', 
-              month: 'long' 
+            {new Date().toLocaleDateString('es-ES', {
+              day: 'numeric',
+              month: 'long',
             })}
           </Text>
           <Text style={styles.statLabel}>Fecha</Text>
-        </View>
-        
+        </TouchableOpacity>
+
         <View style={styles.statCard}>
           <Ionicons name="notifications-outline" size={24} color={colors.primary[600]} />
           <Text style={styles.statValue}>5</Text>
           <Text style={styles.statLabel}>Notificaciones</Text>
         </View>
-        
+
         <View style={styles.statCard}>
           <Ionicons name="alert-circle-outline" size={24} color={colors.primary[600]} />
           <Text style={styles.statValue}>2</Text>
@@ -222,9 +227,7 @@ const isEstudiante = hasRole('ESTUDIANTE');
         <Text style={styles.sectionTitle}>Actividad Reciente</Text>
         <View style={styles.activityCard}>
           <Ionicons name="time-outline" size={20} color={colors.gray[500]} />
-          <Text style={styles.activityText}>
-            No hay actividad reciente
-          </Text>
+          <Text style={styles.activityText}>No hay actividad reciente</Text>
         </View>
       </View>
     </ScrollView>
@@ -232,123 +235,47 @@ const isEstudiante = hasRole('ESTUDIANTE');
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.gray[50],
-  },
+  container: { flex: 1, backgroundColor: colors.gray[50] },
   header: {
-    backgroundColor: colors.white,
-    padding: spacing.lg,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
+    backgroundColor: colors.white, padding: spacing.lg,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    borderBottomWidth: 1, borderBottomColor: colors.gray[200],
   },
-  greeting: {
-    fontSize: fontSize.base,
-    color: colors.gray[600],
-  },
-  userName: {
-    fontSize: fontSize.xl,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-    marginTop: spacing.xs,
-  },
-  roleBadge: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-  },
-  roleText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
+  greeting: { fontSize: fontSize.base, color: colors.gray[600] },
+  userName: { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900], marginTop: spacing.xs },
+  roleBadge: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: borderRadius.full },
+  roleText: { fontSize: fontSize.sm, fontWeight: '600' },
+  statsContainer: { flexDirection: 'row', padding: spacing.lg, gap: spacing.md },
   statCard: {
-    flex: 1,
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    flex: 1, backgroundColor: colors.white, padding: spacing.md,
+    borderRadius: borderRadius.lg, alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1, shadowRadius: 2, elevation: 2,
   },
-  statValue: {
-    fontSize: fontSize.lg,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-    marginTop: spacing.xs,
-  },
-  statLabel: {
-    fontSize: fontSize.xs,
-    color: colors.gray[600],
-    marginTop: spacing.xs,
-  },
-  section: {
-    padding: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-    marginBottom: spacing.md,
-  },
-  cardsContainer: {
-    gap: spacing.md,
-  },
+  statValue: { fontSize: fontSize.lg, fontWeight: 'bold', color: colors.gray[900], marginTop: spacing.xs },
+  statLabel: { fontSize: fontSize.xs, color: colors.gray[600], marginTop: spacing.xs },
+  section: { padding: spacing.lg },
+  sectionTitle: { fontSize: fontSize.lg, fontWeight: 'bold', color: colors.gray[900], marginBottom: spacing.md },
+  cardsContainer: { gap: spacing.md },
   card: {
-    backgroundColor: colors.white,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: colors.white, padding: spacing.lg,
+    borderRadius: borderRadius.lg, flexDirection: 'row', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
   },
   iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
+    width: 56, height: 56, borderRadius: borderRadius.md,
+    justifyContent: 'center', alignItems: 'center', marginRight: spacing.md,
   },
-  cardContent: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: colors.gray[900],
-    marginBottom: spacing.xs,
-  },
-  cardDescription: {
-    fontSize: fontSize.sm,
-    color: colors.gray[600],
-  },
+  cardContent: { flex: 1 },
+  cardTitle: { fontSize: fontSize.base, fontWeight: '600', color: colors.gray[900], marginBottom: spacing.xs },
+  cardDescription: { fontSize: fontSize.sm, color: colors.gray[600] },
   activityCard: {
-    backgroundColor: colors.white,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+    backgroundColor: colors.white, padding: spacing.lg,
+    borderRadius: borderRadius.lg, flexDirection: 'row',
+    alignItems: 'center', gap: spacing.md,
   },
-  activityText: {
-    fontSize: fontSize.sm,
-    color: colors.gray[600],
-  },
+  activityText: { fontSize: fontSize.sm, color: colors.gray[600] },
 });
 
 export default DashboardScreen;

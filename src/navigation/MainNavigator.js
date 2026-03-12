@@ -36,8 +36,9 @@ import MatriculasScreen from '../screens/academic/MatriculasScreen';
 import PensionesScreen from '../screens/finance/PensionesScreen';
 import MisPensionesScreen from '../screens/finance/MisPensionesScreen';
 
-// Screens - Profile
+// Screens - Compartidas (todos los roles)
 import MiPerfilScreen from '../screens/profile/MiPerfilScreen';
+import CalendarioScreen from '../screens/calendario/CalendarioScreen';
 
 // Custom Drawer
 import CustomDrawerContent from '../components/layout/CustomDrawerContent';
@@ -72,242 +73,113 @@ const MainNavigator = () => {
         drawerStyle: { backgroundColor: '#f8fafc' },
       }}
     >
-      {/* Dashboard */}
+      {/* ── Dashboard (todos) ───────────────────────────────────────────── */}
       <Drawer.Screen
         name="Dashboard"
         component={DashboardScreen}
         options={{
           title: 'Inicio',
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          drawerIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
 
-      {/* ADMINISTRADOR y ADMINISTRATIVO */}
+      {/* ── ADMINISTRADOR y ADMINISTRATIVO ──────────────────────────────── */}
       {(isAdmin || isAdministrativo) && (
         <>
-          <Drawer.Screen
-            name="Usuarios"
-            component={UsuariosScreen}
-            options={{
-              title: 'Usuarios',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="people" size={size} color={color} />
-              ),
-            }}
-          />
+          <Drawer.Screen name="Usuarios" component={UsuariosScreen}
+            options={{ title: 'Usuarios', drawerIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} /> }} />
 
-          <Drawer.Screen
-            name="GestionAcademica"
-            component={GestionAcademicaScreen}
-            options={{
-              title: 'Gestión Académica',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="school" size={size} color={color} />
-              ),
-            }}
-          />
+          <Drawer.Screen name="GestionAcademica" component={GestionAcademicaScreen}
+            options={{ title: 'Gestión Académica', drawerIcon: ({ color, size }) => <Ionicons name="school" size={size} color={color} /> }} />
 
-          <Drawer.Screen
-            name="Pensiones"
-            component={PensionesScreen}
-            options={{
-              title: 'Pensiones',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="cash" size={size} color={color} />
-              ),
-            }}
-          />
+          <Drawer.Screen name="Pensiones" component={PensionesScreen}
+            options={{ title: 'Pensiones', drawerIcon: ({ color, size }) => <Ionicons name="cash" size={size} color={color} /> }} />
 
-          <Drawer.Screen
-            name="AdministracionEscolar"
-            component={AdministracionEscolarScreen}
-            options={{
-              title: 'Administración Escolar',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="briefcase" size={size} color={color} />
-              ),
-            }}
-          />
+          <Drawer.Screen name="AdministracionEscolar" component={AdministracionEscolarScreen}
+            options={{ title: 'Administración Escolar', drawerIcon: ({ color, size }) => <Ionicons name="briefcase" size={size} color={color} /> }} />
 
-          <Drawer.Screen
-            name="Configuracion"
-            component={ConfiguracionScreen}
-            options={{
-              title: 'Configuración',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="settings" size={size} color={color} />
-              ),
-            }}
-          />
+          <Drawer.Screen name="Configuracion" component={ConfiguracionScreen}
+            options={{ title: 'Configuración', drawerIcon: ({ color, size }) => <Ionicons name="settings" size={size} color={color} /> }} />
 
-          {/* Pantallas ocultas - Usuarios */}
-          <Drawer.Screen
-            name="CrearUsuario"
-            component={CrearUsuarioScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Crear Usuario' }}
-          />
-          <Drawer.Screen
-            name="EditarUsuario"
-            component={EditarUsuarioScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Editar Usuario' }}
-          />
+          {/* Ocultas - Usuarios */}
+          <Drawer.Screen name="CrearUsuario" component={CrearUsuarioScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Crear Usuario' }} />
+          <Drawer.Screen name="EditarUsuario" component={EditarUsuarioScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Editar Usuario' }} />
 
-          {/* Pantallas ocultas - Gestión Académica */}
-          <Drawer.Screen
-            name="Materias"
-            component={MateriasScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Materias' }}
-          />
-          <Drawer.Screen
-            name="PlanesEstudio"
-            component={PlanesEstudioScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Planes de Estudio' }}
-          />
-          <Drawer.Screen
-            name="Competencias"
-            component={CompetenciasScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Competencias y Logros' }}
-          />
-          <Drawer.Screen
-            name="Matriculas"
-            component={MatriculasScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Matrículas' }}
-          />
+          {/* Ocultas - Académico */}
+          <Drawer.Screen name="Materias" component={MateriasScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Materias' }} />
+          <Drawer.Screen name="PlanesEstudio" component={PlanesEstudioScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Planes de Estudio' }} />
+          <Drawer.Screen name="Competencias" component={CompetenciasScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Competencias y Logros' }} />
+          <Drawer.Screen name="Matriculas" component={MatriculasScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Matrículas' }} />
 
-          {/* Pantallas ocultas - Configuración */}
-          <Drawer.Screen
-            name="ConfigInstitucion"
-            component={ConfigInstitucionScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Información Institucional' }}
-          />
-          <Drawer.Screen
-            name="ConfigPeriodos"
-            component={ConfigPeriodosScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Períodos Académicos' }}
-          />
-          <Drawer.Screen
-            name="ConfigSubPeriodos"
-            component={ConfigSubPeriodosScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Configurar Períodos' }}
-          />
-          <Drawer.Screen
-            name="ConfigGrados"
-            component={ConfigGradosScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Grados y Niveles' }}
-          />
-          <Drawer.Screen
-            name="ConfigRoles"
-            component={ConfigRolesScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Roles del Sistema' }}
-          />
-          <Drawer.Screen
-            name="ConfigTiposDocumento"
-            component={ConfigTiposDocumentoScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Tipos de Documento' }}
-          />
-          <Drawer.Screen
-            name="ConfigGeneral"
-            component={ConfigGeneralScreen}
-            options={{ drawerItemStyle: { display: 'none' }, title: 'Configuración General' }}
-          />
+          {/* Ocultas - Configuración */}
+          <Drawer.Screen name="ConfigInstitucion" component={ConfigInstitucionScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Información Institucional' }} />
+          <Drawer.Screen name="ConfigPeriodos" component={ConfigPeriodosScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Períodos Académicos' }} />
+          <Drawer.Screen name="ConfigSubPeriodos" component={ConfigSubPeriodosScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Configurar Períodos' }} />
+          <Drawer.Screen name="ConfigGrados" component={ConfigGradosScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Grados y Niveles' }} />
+          <Drawer.Screen name="ConfigRoles" component={ConfigRolesScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Roles del Sistema' }} />
+          <Drawer.Screen name="ConfigTiposDocumento" component={ConfigTiposDocumentoScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Tipos de Documento' }} />
+          <Drawer.Screen name="ConfigGeneral" component={ConfigGeneralScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Configuración General' }} />
         </>
       )}
 
-      {/* DOCENTE */}
+      {/* ── DOCENTE ─────────────────────────────────────────────────────── */}
       {isDocente && (
         <>
-          <Drawer.Screen
-            name="GestionAcademicaDocente"
-            component={GestionAcademicaScreen}
-            options={{
-              title: 'Gestión Académica',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="school" size={size} color={color} />
-              ),
-            }}
-          />
-          <Drawer.Screen
-            name="Usuarios"
-            component={UsuariosScreen}
-            options={{
-              drawerItemStyle: { display: 'none' },
-              title: 'Estudiantes',
-            }}
-          />
-          <Drawer.Screen
-            name="Documentacion"
-            component={DocumentacionScreen}
-            options={{
-              title: 'Documentación',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="document-text" size={size} color={color} />
-              ),
-            }}
-          />
+          <Drawer.Screen name="GestionAcademicaDocente" component={GestionAcademicaScreen}
+            options={{ title: 'Gestión Académica', drawerIcon: ({ color, size }) => <Ionicons name="school" size={size} color={color} /> }} />
+          <Drawer.Screen name="Usuarios" component={UsuariosScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Estudiantes' }} />
+          <Drawer.Screen name="Documentacion" component={DocumentacionScreen}
+            options={{ title: 'Documentación', drawerIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} /> }} />
         </>
       )}
 
-      {/* ESTUDIANTE */}
+      {/* ── ESTUDIANTE ───────────────────────────────────────────────────── */}
       {isEstudiante && (
         <>
-          <Drawer.Screen
-            name="MisPensiones"
-            component={MisPensionesScreen}
-            options={{
-              title: 'Matrícula y Finanzas',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="cash" size={size} color={color} />
-              ),
-            }}
-          />
-          <Drawer.Screen
-            name="Certificados"
-            component={DocumentacionScreen}
-            options={{
-              title: 'Certificados',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="ribbon" size={size} color={color} />
-              ),
-            }}
-          />
-          <Drawer.Screen
-            name="Docentes"
-            component={DocentesScreen}
-            options={{
-              title: 'Docentes',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="person" size={size} color={color} />
-              ),
-            }}
-          />
-          <Drawer.Screen
-            name="Estudiantes"
-            component={EstudiantesScreen}
-            options={{
-              title: 'Compañeros',
-              drawerIcon: ({ color, size }) => (
-                <Ionicons name="people" size={size} color={color} />
-              ),
-            }}
-          />
+          <Drawer.Screen name="MisPensiones" component={MisPensionesScreen}
+            options={{ title: 'Matrícula y Finanzas', drawerIcon: ({ color, size }) => <Ionicons name="cash" size={size} color={color} /> }} />
+          <Drawer.Screen name="Certificados" component={DocumentacionScreen}
+            options={{ title: 'Certificados', drawerIcon: ({ color, size }) => <Ionicons name="ribbon" size={size} color={color} /> }} />
+          <Drawer.Screen name="Docentes" component={DocentesScreen}
+            options={{ title: 'Docentes', drawerIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} /> }} />
+          <Drawer.Screen name="Estudiantes" component={EstudiantesScreen}
+            options={{ title: 'Compañeros', drawerIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} /> }} />
         </>
       )}
 
-      {/* DOCENTE y ESTUDIANTE */}
-      {(isDocente || isEstudiante) && (
-        <Drawer.Screen
-          name="MiPerfil"
-          component={MiPerfilScreen}
-          options={{
-            title: 'Mi Perfil',
-            drawerIcon: ({ color, size }) => (
-              <Ionicons name="person-circle" size={size} color={color} />
-            ),
-          }}
-        />
-      )}
+      {/* ── PANTALLAS COMPARTIDAS (todos los roles) ──────────────────────
+           Siempre al final, ocultas del drawer o visibles según convenga  */}
+      <Drawer.Screen
+        name="Calendario"
+        component={CalendarioScreen}
+        options={{
+          title: 'Calendario',
+          drawerIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="MiPerfil"
+        component={MiPerfilScreen}
+        options={{
+          title: 'Mi Perfil',
+          drawerIcon: ({ color, size }) => <Ionicons name="person-circle" size={size} color={color} />,
+        }}
+      />
+
     </Drawer.Navigator>
   );
 };

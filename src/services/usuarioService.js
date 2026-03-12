@@ -11,6 +11,11 @@ export const usuarioService = {
     return response.data;
   },
 
+  me: async () => {
+    const response = await api.get('/usuarios/me');
+    return response.data;
+  },
+
   crear: async (dto) => {
     const response = await api.post('/usuarios', dto);
     return response.data;
