@@ -2,12 +2,18 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// Para desarrollo local
 const getBaseURL = () => {
+  // Variable de entorno de Vercel (produccion)
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+
+  // Desarrollo local
   if (Platform.OS === 'web') {
     return 'http://localhost:8080/api';
   }
-  return 'http://192.168.1.100:8080/api'; // Cambia por tu IP
+
+  return 'http://192.168.1.100:8080/api'; // Cambia por tu IP local
 };
 
 const API_URL = getBaseURL();
@@ -15,11 +21,11 @@ const API_URL = getBaseURL();
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
-// Interceptor para agregar el token
+// Interceptor request - agregar token
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('token');
@@ -32,12 +38,10 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Interceptor para manejar errores de autenticación
+// Interceptor response - manejar errores
 api.interceptors.response.use(
   (response) => {
     console.log('✅ Response from:', response.config.url, '- Status:', response.status);
@@ -47,7 +51,7 @@ api.interceptors.response.use(
     console.error('❌ Request failed:', error.config?.url);
     console.error('Status:', error.response?.status);
     console.error('Data:', error.response?.data);
-    
+
     if (error.response?.status === 401) {
       await AsyncStorage.removeItem('user');
       await AsyncStorage.removeItem('token');
