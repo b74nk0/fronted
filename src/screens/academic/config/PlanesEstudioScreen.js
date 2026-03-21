@@ -1,15 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  ActivityIndicator,
-  Modal,
-  Alert,
-  TextInput,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  ActivityIndicator, Modal, TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -17,691 +9,481 @@ import Card from '../../../components/common/Card';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
 import EmptyState from '../../../components/common/EmptyState';
+import ConfirmModal from '../../../components/common/ConfirmModal';
 import { colors, spacing, fontSize, borderRadius } from '../../../constants/theme';
 import { planEstudioService } from '../../../services/planEstudioService';
 import { nivelService } from '../../../services/nivelService';
-import { periodoAcademicoService } from '../../../services/periodoAcademicoService';
 import { materiaService } from '../../../services/materiaService';
 
-const FORM_INITIAL = {
-  nombre: '',
-  grado: null,       // { id, nombre }
-  periodoAcademico: null,  // { id, nombre }
-  detalles: [],      // [{ materia: { id, nombre }, horasSemanales }]
-};
+const PlanCard = ({ plan, onEdit, onDelete }) => (
+  <Card style={styles.card}>
+    <View style={styles.cardHeader}>
+      <View style={styles.cardHeaderLeft}>
+        <View style={styles.cardIcon}>
+          <Ionicons name="document-text-outline" size={20} color={colors.primary[600]} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.cardNombre}>{plan.nombre}</Text>
+          <Text style={styles.cardSub}>
+            {plan.nivelNombre ? `${plan.nivelNombre} · ` : ''}{plan.gradoNombre}
+          </Text>
+        </View>
+      </View>
+      <View style={styles.cardActions}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => onEdit(plan)}>
+          <Ionicons name="pencil-outline" size={17} color={colors.primary[600]} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => onDelete(plan)}>
+          <Ionicons name="trash-outline" size={17} color={colors.red[500]} />
+        </TouchableOpacity>
+      </View>
+    </View>
+    {plan.detalles?.length > 0 ? (
+      <View style={styles.materiasWrap}>
+        {plan.detalles.map((d, i) => (
+          <View key={d.id ?? i} style={styles.materiaChip}>
+            <Text style={styles.materiaChipText}>{d.materiaNombre}</Text>
+            {d.horasSemanales ? (
+              <Text style={styles.materiaChipHoras}> · {d.horasSemanales}h</Text>
+            ) : null}
+          </View>
+        ))}
+      </View>
+    ) : (
+      <Text style={styles.sinMaterias}>Sin materias asignadas</Text>
+    )}
+  </Card>
+);
 
 const PlanesEstudioScreen = () => {
   const navigation = useNavigation();
 
-  // ─── Estado principal ────────────────────────────────────────────────────────
-  const [planes, setPlanes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-
-  // ─── Catálogos ───────────────────────────────────────────────────────────────
-  const [niveles, setNiveles] = useState([]);       // para el selector de grado
-  const [periodos, setPeriodos] = useState([]);
+  const [planes,   setPlanes]   = useState([]);
+  const [niveles,  setNiveles]  = useState([]);
   const [materias, setMaterias] = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [busqueda, setBusqueda] = useState('');
 
-  // ─── Modal ───────────────────────────────────────────────────────────────────
   const [modalVisible, setModalVisible] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [editingPlan, setEditingPlan] = useState(null);
-  const [formData, setFormData] = useState(FORM_INITIAL);
-  const [errors, setErrors] = useState({});
+  const [editando,     setEditando]     = useState(null);
+  const [saving,       setSaving]       = useState(false);
+  const [errors,       setErrors]       = useState({});
 
-  // ─── Sub-modal selector de materia ──────────────────────────────────────────
-  const [materiaModalVisible, setMateriaModalVisible] = useState(false);
+  const [formNombre,            setFormNombre]            = useState('');
+  const [nivelSel,              setNivelSel]              = useState(null);
+  const [gradoSel,              setGradoSel]              = useState(null);
+  const [materiasSeleccionadas, setMateriasSeleccionadas] = useState([]);
 
-  // ─── Cargar todo ─────────────────────────────────────────────────────────────
-  const loadAll = async () => {
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [planAEliminar,  setPlanAEliminar]  = useState(null);
+  const [eliminando,     setEliminando]     = useState(false);
+
+  const loadData = async () => {
     setLoading(true);
     try {
-      const [planesData, nivelesData, periodosData, materiasData] = await Promise.all([
+      const [planesData, nivelesData, materiasData] = await Promise.all([
         planEstudioService.listar(),
         nivelService.listar(),
-        periodoAcademicoService.listar(),
         materiaService.listar(),
       ]);
       setPlanes(planesData);
       setNiveles(nivelesData);
-      setPeriodos(periodosData);
-      setMaterias(materiasData);
-    } catch (error) {
-      console.error('Error cargando datos:', error);
-      Alert.alert('Error', 'No se pudieron cargar los datos.');
+      setMaterias(materiasData.filter(m => m.activo !== false));
+    } catch (e) {
+      console.error('Error:', e);
     } finally {
       setLoading(false);
     }
   };
 
-  useFocusEffect(useCallback(() => { loadAll(); }, []));
+  useFocusEffect(useCallback(() => { loadData(); }, []));
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadAll();
-    setRefreshing(false);
-  }, []);
+  const filtrados = planes.filter(p => {
+    if (!busqueda.trim()) return true;
+    const q = busqueda.toLowerCase();
+    return p.nombre?.toLowerCase().includes(q) ||
+      p.gradoNombre?.toLowerCase().includes(q) ||
+      p.nivelNombre?.toLowerCase().includes(q);
+  });
 
-  // ─── Modal plan ──────────────────────────────────────────────────────────────
-  const openModal = (plan = null) => {
-    setEditingPlan(plan);
+  const gradosDelNivel = nivelSel
+    ? (niveles.find(n => n.id === nivelSel)?.grados || [])
+    : [];
+
+  const gradosConPlan = new Set(planes.map(p => p.gradoId));
+
+  const openCrear = () => {
+    setEditando(null);
+    setFormNombre('');
+    setNivelSel(null);
+    setGradoSel(null);
+    setMateriasSeleccionadas([]);
     setErrors({});
-    if (plan) {
-      setFormData({
-        nombre: plan.nombre || '',
-        grado: plan.grado || null,
-        periodoAcademico: plan.periodoAcademico || null,
-        detalles: (plan.detalles || []).map(d => ({
-          materia: d.materia,
-          horasSemanales: d.horasSemanales?.toString() || '',
-        })),
-      });
-    } else {
-      setFormData(FORM_INITIAL);
-    }
     setModalVisible(true);
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    setEditingPlan(null);
-    setFormData(FORM_INITIAL);
-    setErrors({});
-  };
-
-  // ─── Selección de grado ──────────────────────────────────────────────────────
-  const selectGrado = (grado) => {
-    setFormData(f => ({ ...f, grado }));
-    if (errors.grado) setErrors(e => ({ ...e, grado: null }));
-  };
-
-  // ─── Selección de periodo ────────────────────────────────────────────────────
-  const selectPeriodo = (periodo) => {
-    setFormData(f => ({ ...f, periodoAcademico: periodo }));
-    if (errors.periodoAcademico) setErrors(e => ({ ...e, periodoAcademico: null }));
-  };
-
-  // ─── Gestión de detalles ─────────────────────────────────────────────────────
-  const addMateria = (materia) => {
-    const yaExiste = formData.detalles.some(d => d.materia?.id === materia.id);
-    if (yaExiste) {
-      Alert.alert('Ya agregada', 'Esta materia ya está en el plan.');
-      return;
+  const openEditar = (plan) => {
+    setEditando(plan);
+    setFormNombre(plan.nombre);
+    let nivelId = null;
+    for (const n of niveles) {
+      if (n.grados?.find(g => g.id === plan.gradoId)) { nivelId = n.id; break; }
     }
-    setFormData(f => ({
-      ...f,
-      detalles: [...f.detalles, { materia, horasSemanales: '' }],
-    }));
-    setMateriaModalVisible(false);
-  };
-
-  const updateHoras = (index, valor) => {
-    const nuevos = formData.detalles.map((d, i) =>
-      i === index ? { ...d, horasSemanales: valor } : d
+    setNivelSel(nivelId);
+    setGradoSel(plan.gradoId);
+    setMateriasSeleccionadas(
+      (plan.detalles || []).map(d => ({
+        materiaId: d.materiaId,
+        horas: d.horasSemanales ? String(d.horasSemanales) : '',
+      }))
     );
-    setFormData(f => ({ ...f, detalles: nuevos }));
+    setErrors({});
+    setModalVisible(true);
   };
 
-  const removeDetalle = (index) => {
-    setFormData(f => ({
-      ...f,
-      detalles: f.detalles.filter((_, i) => i !== index),
-    }));
+  const toggleMateria = (materiaId) => {
+    setMateriasSeleccionadas(prev => {
+      if (prev.find(m => m.materiaId === materiaId))
+        return prev.filter(m => m.materiaId !== materiaId);
+      return [...prev, { materiaId, horas: '' }];
+    });
   };
 
-  // ─── Validar ────────────────────────────────────────────────────────────────
+  const updateHoras = (materiaId, horas) => {
+    setMateriasSeleccionadas(prev =>
+      prev.map(m => m.materiaId === materiaId ? { ...m, horas } : m)
+    );
+  };
+
   const validate = () => {
     const e = {};
-    if (!formData.nombre.trim()) e.nombre = 'Requerido';
-    if (!formData.grado) e.grado = 'Selecciona un grado';
-    if (!formData.periodoAcademico) e.periodoAcademico = 'Selecciona un período';
-    if (formData.detalles.length === 0) e.detalles = 'Agrega al menos una materia';
-    formData.detalles.forEach((d, i) => {
-      if (!d.horasSemanales || isNaN(parseInt(d.horasSemanales))) {
-        e[`horas_${i}`] = 'Ingresa las horas';
-      }
-    });
+    if (!formNombre.trim()) e.nombre = 'Requerido';
+    if (!gradoSel)           e.grado = 'Selecciona un grado';
+    if (materiasSeleccionadas.length === 0) e.materias = 'Agrega al menos una materia';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  // ─── Guardar ────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!validate()) return;
     setSaving(true);
     try {
       const payload = {
-        nombre: formData.nombre,
-        grado: { id: formData.grado.id },
-        periodoAcademico: { id: formData.periodoAcademico.id },
-        detalles: formData.detalles.filter(d => d.materia?.id).map(d => ({
-          materia: { id: d.materia.id },
-          horasSemanales: parseInt(d.horasSemanales),
+        nombre: formNombre,
+        gradoId: gradoSel,
+        activo: true,
+        detalles: materiasSeleccionadas.map(m => ({
+          materiaId: m.materiaId,
+          horasSemanales: m.horas ? parseInt(m.horas) : null,
         })),
       };
-
-      if (editingPlan) {
-        await planEstudioService.actualizar(editingPlan.id, payload);
-      } else {
-        await planEstudioService.crear(payload);
-      }
-      closeModal();
-      await loadAll();
-    } catch (error) {
-      console.error('Error guardando plan:', error);
-      Alert.alert('Error', 'No se pudo guardar el plan de estudio.');
+      if (editando) await planEstudioService.actualizar(editando.id, payload);
+      else          await planEstudioService.crear(payload);
+      setModalVisible(false);
+      await loadData();
+    } catch (e) {
+      console.error('Error guardando:', e);
     } finally {
       setSaving(false);
     }
   };
 
-  // ─── Desactivar ─────────────────────────────────────────────────────────────
-  const handleDesactivar = (plan) => {
-    Alert.alert(
-      'Desactivar plan',
-      `¿Deseas desactivar "${plan.nombre}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Desactivar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await planEstudioService.desactivar(plan.id);
-              await loadAll();
-            } catch (error) {
-              Alert.alert('Error', 'No se pudo desactivar el plan.');
-            }
-          },
-        },
-      ]
-    );
+  const confirmarEliminar = async () => {
+    if (!planAEliminar) return;
+    setEliminando(true);
+    try {
+      await planEstudioService.eliminar(planAEliminar.id);
+      setConfirmVisible(false);
+      setPlanAEliminar(null);
+      await loadData();
+    } catch (e) {
+      console.error('Error eliminando:', e);
+    } finally {
+      setEliminando(false);
+    }
   };
 
-  // ─── Todos los grados aplanados de todos los niveles ─────────────────────────
-  const gradosFlat = niveles.flatMap(n =>
-    (n.grados || []).map(g => ({ ...g, nivelNombre: n.nombre }))
-  );
-
-  // ─── Render card plan ────────────────────────────────────────────────────────
-  const renderPlanCard = (plan) => (
-    <Card key={plan.id} style={styles.card}>
-      {/* Header */}
-      <View style={styles.cardHeader}>
-        <View style={styles.cardIconContainer}>
-          <Ionicons name="document-text" size={22} color={colors.primary[600]} />
-        </View>
-        <View style={styles.cardInfo}>
-          <Text style={styles.cardNombre}>{plan.nombre}</Text>
-          <Text style={styles.cardMeta}>
-            {plan.grado?.nombre} · {plan.periodoAcademico?.nombre}
-          </Text>
-          <View style={[styles.activoBadge, !plan.activo && styles.inactivoBadge]}>
-            <Text style={[styles.activoText, !plan.activo && styles.inactivoText]}>
-              {plan.activo ? 'Activo' : 'Inactivo'}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.cardActions}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => openModal(plan)}>
-            <Ionicons name="pencil" size={18} color={colors.primary[600]} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => handleDesactivar(plan)}>
-            <Ionicons name="eye-off" size={18} color={colors.red[500]} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Detalles */}
-      {plan.detalles && plan.detalles.length > 0 && (
-        <View style={styles.detallesContainer}>
-          <Text style={styles.detallesTitle}>Materias asignadas</Text>
-          {plan.detalles.map((d, i) => (
-            <View
-              key={d.id || i}
-              style={[styles.detalleRow, i < plan.detalles.length - 1 && styles.detalleBorder]}
-            >
-              <Ionicons name="book-outline" size={14} color={colors.gray[500]} />
-              <Text style={styles.detalleMateria}>{d.materia?.nombre}</Text>
-              <View style={styles.horasBadge}>
-                <Text style={styles.horasText}>{d.horasSemanales}h/sem</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
-    </Card>
-  );
-
-  // ─── Modal selector de materia ───────────────────────────────────────────────
-  const renderMateriaModal = () => {
-    const materiasDisponibles = materias.filter(
-      m => !formData.detalles.some(d => d.materia?.id === m.id)
-    );
-    return (
-      <Modal
-        visible={materiaModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setMateriaModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: '70%' }]}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Seleccionar Materia</Text>
-              <TouchableOpacity onPress={() => setMateriaModalVisible(false)}>
-                <Ionicons name="close" size={24} color={colors.gray[600]} />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalBody}>
-              {materiasDisponibles.length === 0 ? (
-                <Text style={styles.sinMateriasText}>
-                  Todas las materias ya están agregadas
-                </Text>
-              ) : (
-                materiasDisponibles.map(m => (
-                  <TouchableOpacity
-                    key={m.id}
-                    style={styles.materiaOpcion}
-                    onPress={() => addMateria(m)}
-                  >
-                    <Ionicons name="book-outline" size={18} color={colors.primary[600]} />
-                    <Text style={styles.materiaOpcionText}>{m.nombre}</Text>
-                    <Ionicons name="add-circle-outline" size={20} color={colors.primary[600]} />
-                  </TouchableOpacity>
-                ))
-              )}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-    );
-  };
-
-  // ─── Modal principal ─────────────────────────────────────────────────────────
   const renderModal = () => (
-    <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={closeModal}>
+    <Modal visible={modalVisible} transparent animationType="fade"
+      onRequestClose={() => setModalVisible(false)}>
       <View style={styles.modalOverlay}>
-        <View style={[styles.modalContent, { maxHeight: '92%' }]}>
+        <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>
-              {editingPlan ? 'Editar Plan de Estudio' : 'Nuevo Plan de Estudio'}
+              {editando ? 'Editar Plan' : 'Nuevo Plan de Estudio'}
             </Text>
-            <TouchableOpacity onPress={closeModal}>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Ionicons name="close" size={24} color={colors.gray[600]} />
             </TouchableOpacity>
           </View>
-
           <ScrollView style={styles.modalBody} keyboardShouldPersistTaps="handled">
-            {/* Nombre */}
-            <Input
-              label="Nombre del plan *"
-              placeholder="Ej: Plan Primaria 2025"
-              value={formData.nombre}
-              onChangeText={(t) => setFormData(f => ({ ...f, nombre: t }))}
-              error={errors.nombre}
-            />
+            <Input label="Nombre del plan *" value={formNombre}
+              onChangeText={setFormNombre} error={errors.nombre}
+              placeholder="Ej: Plan Quinto Grado" />
 
-            {/* Selector de Período */}
-            <Text style={styles.fieldLabel}>Período Académico *</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-              {periodos.map(p => (
-                <TouchableOpacity
-                  key={p.id}
-                  style={[styles.chip, formData.periodoAcademico?.id === p.id && styles.chipSelected]}
-                  onPress={() => selectPeriodo(p)}
-                >
-                  <Text style={[styles.chipText, formData.periodoAcademico?.id === p.id && styles.chipTextSelected]}>
-                    {p.nombre}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            {errors.periodoAcademico && <Text style={styles.errorText}>{errors.periodoAcademico}</Text>}
-
-            {/* Selector de Grado */}
-            <Text style={styles.fieldLabel}>Grado *</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-              {gradosFlat.map(g => (
-                <TouchableOpacity
-                  key={g.id}
-                  style={[styles.chip, formData.grado?.id === g.id && styles.chipSelected]}
-                  onPress={() => selectGrado(g)}
-                >
-                  <Text style={[styles.chipText, formData.grado?.id === g.id && styles.chipTextSelected]}>
-                    {g.nombre}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            {errors.grado && <Text style={styles.errorText}>{errors.grado}</Text>}
-
-            {/* Materias y horas */}
-            <View style={styles.materiasHeader}>
-              <Text style={styles.fieldLabel}>Materias y Carga Horaria *</Text>
-              <TouchableOpacity
-                style={styles.addMateriaBtn}
-                onPress={() => setMateriaModalVisible(true)}
-              >
-                <Ionicons name="add-circle-outline" size={20} color={colors.primary[600]} />
-                <Text style={styles.addMateriaBtnText}>Agregar</Text>
-              </TouchableOpacity>
-            </View>
-
-            {errors.detalles && <Text style={styles.errorText}>{errors.detalles}</Text>}
-
-            {formData.detalles.length === 0 ? (
-              <View style={styles.sinDetalles}>
-                <Ionicons name="book-outline" size={32} color={colors.gray[300]} />
-                <Text style={styles.sinDetallesText}>Sin materias asignadas</Text>
-              </View>
-            ) : (
-              <View style={styles.detallesEdit}>
-                {formData.detalles.map((d, index) => (
-                  <View key={index} style={styles.detalleEditRow}>
-                    <Text style={styles.detalleMateriaEdit} numberOfLines={1}>
-                      {d.materia?.nombre || 'Materia no disponible'}
-                    </Text>
-                    <TextInput
-                      style={[
-                        styles.horasInput,
-                        errors[`horas_${index}`] && styles.horasInputError,
-                      ]}
-                      placeholder="Hrs"
-                      value={d.horasSemanales}
-                      onChangeText={(t) => updateHoras(index, t)}
-                      keyboardType="numeric"
-                      maxLength={2}
-                    />
-                    <Text style={styles.horasLabel}>h/sem</Text>
-                    <TouchableOpacity onPress={() => removeDetalle(index)}>
-                      <Ionicons name="close-circle" size={22} color={colors.red[400]} />
+            {/* Solo al crear se elige grado */}
+            {!editando && (
+              <>
+                <Text style={styles.fieldLabel}>Nivel educativo *</Text>
+                <View style={styles.chipGroup}>
+                  {niveles.map(n => (
+                    <TouchableOpacity key={n.id}
+                      style={[styles.chip, nivelSel === n.id && styles.chipSelected]}
+                      onPress={() => { setNivelSel(n.id); setGradoSel(null); }}>
+                      <Text style={[styles.chipText, nivelSel === n.id && styles.chipTextSel]}>
+                        {n.nombre}
+                      </Text>
                     </TouchableOpacity>
-                  </View>
-                ))}
+                  ))}
+                </View>
+
+                {nivelSel && (
+                  <>
+                    <Text style={styles.fieldLabel}>Grado *</Text>
+                    <View style={styles.chipGroup}>
+                      {gradosDelNivel.map(g => {
+                        const ocupado = gradosConPlan.has(g.id);
+                        return (
+                          <TouchableOpacity key={g.id}
+                            style={[styles.chip,
+                              gradoSel === g.id && styles.chipSelected,
+                              ocupado && styles.chipDisabled,
+                            ]}
+                            onPress={() => !ocupado && setGradoSel(g.id)}>
+                            <Text style={[styles.chipText,
+                              gradoSel === g.id && styles.chipTextSel,
+                              ocupado && styles.chipTextDisabled,
+                            ]}>
+                              {g.nombre}{ocupado ? ' ✓' : ''}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                    {errors.grado && <Text style={styles.errorText}>{errors.grado}</Text>}
+                  </>
+                )}
+              </>
+            )}
+
+            {editando && (
+              <View style={styles.infoRow}>
+                <Ionicons name="information-circle-outline" size={15} color={colors.primary[600]} />
+                <Text style={styles.infoText}>
+                  Grado: {editando.gradoNombre} — no se puede cambiar al editar
+                </Text>
               </View>
             )}
 
+            <Text style={styles.fieldLabel}>Materias *</Text>
+            <Text style={styles.fieldHint}>Selecciona materias y define las horas semanales</Text>
+            {errors.materias && <Text style={styles.errorText}>{errors.materias}</Text>}
+
+            {materias.map(m => {
+              const sel = materiasSeleccionadas.find(s => s.materiaId === m.id);
+              return (
+                <View key={m.id} style={[styles.materiaRow, sel && styles.materiaRowSel]}>
+                  <TouchableOpacity style={styles.materiaCheck} onPress={() => toggleMateria(m.id)}>
+                    <View style={[styles.checkbox, sel && styles.checkboxChecked]}>
+                      {sel && <Ionicons name="checkmark" size={13} color={colors.white} />}
+                    </View>
+                    <Text style={[styles.materiaNombreText, sel && { color: colors.primary[700], fontWeight: '600' }]}>
+                      {m.nombre}
+                    </Text>
+                  </TouchableOpacity>
+                  {sel && (
+                    <View style={styles.horasWrap}>
+                      <TextInput style={styles.horasInput}
+                        value={sel.horas} onChangeText={t => updateHoras(m.id, t)}
+                        keyboardType="numeric" placeholder="Hrs" maxLength={2} />
+                      <Text style={styles.horasLabel}>h/sem</Text>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
             <View style={{ height: spacing.md }} />
           </ScrollView>
-
           <View style={styles.modalFooter}>
-            <Button title="Cancelar" onPress={closeModal} variant="outline" style={{ flex: 1 }} />
-            <Button
-              title={saving ? 'Guardando...' : 'Guardar'}
-              onPress={handleSave}
-              disabled={saving}
-              style={{ flex: 1 }}
-            />
+            <Button title="Cancelar" onPress={() => setModalVisible(false)}
+              variant="outline" style={{ flex: 1 }} />
+            <Button title={saving ? 'Guardando...' : (editando ? 'Actualizar' : 'Crear')}
+              onPress={handleSave} disabled={saving} style={{ flex: 1 }} />
           </View>
         </View>
       </View>
     </Modal>
   );
 
-  if (loading && planes.length === 0) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={colors.primary[600]} />
-        <Text style={styles.loadingText}>Cargando planes de estudio...</Text>
-      </View>
-    );
-  }
+  if (loading) return (
+    <View style={styles.centerContainer}>
+      <ActivityIndicator size="large" color={colors.primary[600]} />
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
         </TouchableOpacity>
         <View style={styles.headerTitle}>
           <Text style={styles.headerText}>Planes de Estudio</Text>
-          <Text style={styles.headerSubtext}>{planes.length} planes registrados</Text>
+          <Text style={styles.headerSub}>Un plan por grado · {planes.length} configurados</Text>
         </View>
-        <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
+        <TouchableOpacity style={styles.addBtn} onPress={openCrear}>
           <Ionicons name="add" size={24} color={colors.white} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        style={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        <View style={styles.infoBox}>
-          <Ionicons name="information-circle" size={20} color={colors.primary[600]} />
-          <Text style={styles.infoText}>
-            Define las materias y su carga horaria semanal para cada grado y período académico.
-          </Text>
-        </View>
-
-        {planes.length === 0 ? (
-          <EmptyState
-            icon="document-text-outline"
-            title="No hay planes de estudio"
-            message="Crea el primer plan para asignar materias a los grados"
-          />
-        ) : (
-          <View style={styles.list}>{planes.map(renderPlanCard)}</View>
+      <View style={styles.searchContainer}>
+        <Ionicons name="search-outline" size={18} color={colors.gray[400]} />
+        <TextInput style={styles.searchInput} placeholder="Buscar plan o grado..."
+          placeholderTextColor={colors.gray[400]} value={busqueda} onChangeText={setBusqueda} />
+        {busqueda.length > 0 && (
+          <TouchableOpacity onPress={() => setBusqueda('')}>
+            <Ionicons name="close-circle" size={18} color={colors.gray[400]} />
+          </TouchableOpacity>
         )}
+      </View>
 
+      <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+        {filtrados.length === 0 ? (
+          <EmptyState icon="document-text-outline" title="Sin planes de estudio"
+            message="Crea el plan de materias para cada grado" />
+        ) : (
+          <View style={styles.list}>
+            {filtrados.map(p => (
+              <PlanCard key={p.id} plan={p}
+                onEdit={openEditar}
+                onDelete={p => { setPlanAEliminar(p); setConfirmVisible(true); }} />
+            ))}
+          </View>
+        )}
         <View style={{ height: spacing.xl }} />
       </ScrollView>
 
       {renderModal()}
-      {renderMateriaModal()}
+      <ConfirmModal
+        visible={confirmVisible}
+        title="Eliminar plan"
+        message={`¿Eliminar el plan "${planAEliminar?.nombre}"?`}
+        confirmText="Eliminar" confirmColor="danger"
+        loading={eliminando}
+        onConfirm={confirmarEliminar}
+        onCancel={() => { setConfirmVisible(false); setPlanAEliminar(null); }}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.gray[50] },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.gray[50] },
-  loadingText: { marginTop: spacing.md, fontSize: fontSize.base, color: colors.gray[600] },
+  container:       { flex: 1, backgroundColor: colors.gray[50] },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
-    backgroundColor: colors.white,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
+    backgroundColor: colors.white, flexDirection: 'row', alignItems: 'center',
+    padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.gray[200],
   },
-  backButton: { marginRight: spacing.md },
+  backBtn: { marginRight: spacing.md },
   headerTitle: { flex: 1 },
-  headerText: { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
-  headerSubtext: { fontSize: fontSize.sm, color: colors.gray[600], marginTop: spacing.xs },
-  addButton: {
-    width: 40, height: 40,
-    backgroundColor: colors.primary[600],
-    borderRadius: borderRadius.full,
-    justifyContent: 'center', alignItems: 'center',
+  headerText:  { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
+  headerSub:   { fontSize: fontSize.xs, color: colors.gray[500], marginTop: 2 },
+  addBtn: {
+    width: 40, height: 40, backgroundColor: colors.primary[600],
+    borderRadius: borderRadius.full, justifyContent: 'center', alignItems: 'center',
   },
+  searchContainer: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white,
+    marginHorizontal: spacing.lg, marginVertical: spacing.md,
+    paddingHorizontal: spacing.md, borderRadius: borderRadius.lg,
+    borderWidth: 1, borderColor: colors.gray[200], gap: spacing.sm, height: 44,
+  },
+  searchInput: { flex: 1, fontSize: fontSize.base, color: colors.gray[900] },
   content: { flex: 1 },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.primary[50],
-    padding: spacing.md,
-    margin: spacing.lg,
-    borderRadius: borderRadius.lg,
-    gap: spacing.sm,
+  list:    { padding: spacing.lg },
+  card:    { marginBottom: spacing.md },
+  cardHeader: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: spacing.sm,
   },
-  infoText: { flex: 1, fontSize: fontSize.sm, color: colors.primary[700], lineHeight: 20 },
-  list: { paddingHorizontal: spacing.lg },
-  card: { marginBottom: spacing.md },
-  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
-  cardIconContainer: {
-    width: 44, height: 44,
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.primary[50],
-    justifyContent: 'center', alignItems: 'center',
+  cardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, flex: 1 },
+  cardIcon: {
+    width: 44, height: 44, borderRadius: borderRadius.md,
+    backgroundColor: colors.primary[50], justifyContent: 'center', alignItems: 'center',
   },
-  cardInfo: { flex: 1 },
-  cardNombre: { fontSize: fontSize.base, fontWeight: '600', color: colors.gray[900] },
-  cardMeta: { fontSize: fontSize.sm, color: colors.gray[500], marginTop: 2 },
-  activoBadge: {
-    alignSelf: 'flex-start',
-    marginTop: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-    backgroundColor: '#dcfce7',
-  },
-  inactivoBadge: { backgroundColor: colors.gray[100] },
-  activoText: { fontSize: fontSize.xs, fontWeight: '600', color: '#16a34a' },
-  inactivoText: { color: colors.gray[500] },
+  cardNombre: { fontSize: fontSize.base, fontWeight: '700', color: colors.gray[900] },
+  cardSub:    { fontSize: fontSize.xs, color: colors.gray[500], marginTop: 2 },
   cardActions: { flexDirection: 'row', gap: spacing.xs },
-  iconButton: {
-    width: 34, height: 34,
-    justifyContent: 'center', alignItems: 'center',
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.gray[100],
+  iconBtn:     { padding: 6 },
+  materiasWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
+  materiaChip: {
+    flexDirection: 'row', backgroundColor: colors.primary[50],
+    paddingHorizontal: spacing.sm, paddingVertical: 3,
+    borderRadius: borderRadius.full, borderWidth: 1, borderColor: colors.primary[100],
   },
-  detallesContainer: {
-    marginTop: spacing.md,
-    backgroundColor: colors.gray[50],
-    borderRadius: borderRadius.md,
-    padding: spacing.sm,
-  },
-  detallesTitle: {
-    fontSize: fontSize.xs,
-    fontWeight: '600',
-    color: colors.gray[500],
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  detalleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.xs + 2,
-    gap: spacing.sm,
-  },
-  detalleBorder: { borderBottomWidth: 1, borderBottomColor: colors.gray[200] },
-  detalleMateria: { flex: 1, fontSize: fontSize.sm, color: colors.gray[700] },
-  horasBadge: {
-    backgroundColor: colors.primary[100],
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-  },
-  horasText: { fontSize: fontSize.xs, fontWeight: '600', color: colors.primary[700] },
-  // Modal
+  materiaChipText:  { fontSize: 11, color: colors.primary[700], fontWeight: '500' },
+  materiaChipHoras: { fontSize: 10, color: colors.primary[400] },
+  sinMaterias: { fontSize: fontSize.xs, color: colors.gray[300], fontStyle: 'italic', marginTop: spacing.xs },
   modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center', alignItems: 'center', padding: spacing.lg,
   },
   modalContent: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.xl,
-    width: '100%',
-    maxWidth: 560,
+    backgroundColor: colors.white, borderRadius: borderRadius.xl,
+    width: '100%', maxWidth: 560, maxHeight: '92%',
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.gray[200],
   },
-  modalTitle: { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
-  modalBody: { padding: spacing.lg },
+  modalTitle:  { fontSize: fontSize.lg, fontWeight: '700', color: colors.gray[900] },
+  modalBody:   { padding: spacing.lg },
   modalFooter: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    padding: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray[200],
+    flexDirection: 'row', gap: spacing.md,
+    padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.gray[200],
   },
-  fieldLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.gray[700],
-    marginBottom: spacing.sm,
-    marginTop: spacing.sm,
+  fieldLabel: { fontSize: fontSize.sm, fontWeight: '600', color: colors.gray[700], marginBottom: spacing.xs },
+  fieldHint:  { fontSize: fontSize.xs, color: colors.gray[400], marginBottom: spacing.sm },
+  infoRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    backgroundColor: colors.primary[50], padding: spacing.sm,
+    borderRadius: borderRadius.md, marginBottom: spacing.md,
   },
-  chipScroll: { marginBottom: spacing.sm },
+  infoText: { fontSize: fontSize.xs, color: colors.primary[700] },
+  chipGroup: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
   chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    borderColor: colors.gray[300],
-    backgroundColor: colors.white,
-    marginRight: spacing.sm,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2,
+    borderRadius: borderRadius.full, borderWidth: 1,
+    borderColor: colors.gray[300], backgroundColor: colors.white,
   },
-  chipSelected: { backgroundColor: colors.primary[600], borderColor: colors.primary[600] },
-  chipText: { fontSize: fontSize.sm, color: colors.gray[700], fontWeight: '500' },
-  chipTextSelected: { color: colors.white },
+  chipSelected:     { backgroundColor: colors.primary[600], borderColor: colors.primary[600] },
+  chipDisabled:     { backgroundColor: colors.gray[50], borderColor: colors.gray[100] },
+  chipText:         { fontSize: fontSize.sm, color: colors.gray[700], fontWeight: '500' },
+  chipTextSel:      { color: colors.white },
+  chipTextDisabled: { color: colors.gray[300] },
   errorText: { fontSize: fontSize.xs, color: colors.red[500], marginBottom: spacing.sm },
-  materiasHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: spacing.sm,
+  materiaRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: spacing.sm, paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.md, marginBottom: spacing.xs,
+    borderWidth: 1, borderColor: colors.gray[100],
   },
-  addMateriaBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
+  materiaRowSel:    { borderColor: colors.primary[200], backgroundColor: colors.primary[50] },
+  materiaCheck:     { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flex: 1 },
+  checkbox: {
+    width: 22, height: 22, borderRadius: borderRadius.sm,
+    borderWidth: 2, borderColor: colors.gray[300],
+    justifyContent: 'center', alignItems: 'center',
   },
-  addMateriaBtnText: { fontSize: fontSize.sm, fontWeight: '600', color: colors.primary[600] },
-  sinDetalles: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-    gap: spacing.sm,
-  },
-  sinDetallesText: { fontSize: fontSize.sm, color: colors.gray[400] },
-  detallesEdit: {
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    marginTop: spacing.xs,
-  },
-  detalleEditRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
-    gap: spacing.sm,
-  },
-  detalleMateriaEdit: { flex: 1, fontSize: fontSize.sm, color: colors.gray[800] },
+  checkboxChecked:   { backgroundColor: colors.primary[600], borderColor: colors.primary[600] },
+  materiaNombreText: { fontSize: fontSize.sm, color: colors.gray[700] },
+  horasWrap:  { flexDirection: 'row', alignItems: 'center', gap: 4 },
   horasInput: {
-    width: 44,
-    height: 36,
-    borderWidth: 1,
-    borderColor: colors.gray[300],
-    borderRadius: borderRadius.sm,
-    textAlign: 'center',
-    fontSize: fontSize.sm,
-    color: colors.gray[900],
-    backgroundColor: colors.white,
+    width: 46, height: 32, borderWidth: 1, borderColor: colors.primary[300],
+    borderRadius: borderRadius.md, textAlign: 'center',
+    fontSize: fontSize.sm, color: colors.gray[900], backgroundColor: colors.white,
   },
-  horasInputError: { borderColor: colors.red[500] },
   horasLabel: { fontSize: fontSize.xs, color: colors.gray[500] },
-  // Selector de materia
-  materiaOpcion: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
-    gap: spacing.md,
-  },
-  materiaOpcionText: { flex: 1, fontSize: fontSize.base, color: colors.gray[800] },
-  sinMateriasText: {
-    textAlign: 'center',
-    padding: spacing.xl,
-    fontSize: fontSize.sm,
-    color: colors.gray[500],
-  },
 });
 
 export default PlanesEstudioScreen;

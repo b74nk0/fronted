@@ -12,16 +12,17 @@ import EmptyState from '../../components/common/EmptyState';
 import { colors, spacing, fontSize, borderRadius } from '../../constants/theme';
 import { pensionService } from '../../services/pensionService';
 import { matriculaService } from '../../services/matriculaService';
+import DatePickerField from '../../components/common/DatePickerField';
 
 const MESES = [
-  'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
 const ESTADO_COLORS = {
   Pendiente: { bg: '#fef9c3', text: '#854d0e', icon: 'time-outline' },
-  Pagado:    { bg: '#dcfce7', text: '#166534', icon: 'checkmark-circle-outline' },
-  Vencido:   { bg: '#fee2e2', text: '#991b1b', icon: 'alert-circle-outline' },
+  Pagado: { bg: '#dcfce7', text: '#166534', icon: 'checkmark-circle-outline' },
+  Vencido: { bg: '#fee2e2', text: '#991b1b', icon: 'alert-circle-outline' },
 };
 
 const FORM_INITIAL = {
@@ -167,16 +168,16 @@ const PensionesScreen = () => {
 
   const stats = {
     pendiente: pensiones.filter(p => p.estado === 'Pendiente').length,
-    pagado:    pensiones.filter(p => p.estado === 'Pagado').length,
-    vencido:   pensiones.filter(p => p.estado === 'Vencido').length,
+    pagado: pensiones.filter(p => p.estado === 'Pagado').length,
+    vencido: pensiones.filter(p => p.estado === 'Vencido').length,
   };
 
   const matriculasFiltradas = busquedaMatricula.trim().length >= 2
     ? matriculas.filter(m => {
-        const est = m.estudiante;
-        return `${est?.nombre} ${est?.apellido} ${est?.numeroDocumento}`
-          .toLowerCase().includes(busquedaMatricula.toLowerCase());
-      })
+      const est = m.estudiante;
+      return `${est?.nombre} ${est?.apellido} ${est?.numeroDocumento}`
+        .toLowerCase().includes(busquedaMatricula.toLowerCase());
+    })
     : [];
 
   // ─── Pagar ────────────────────────────────────────────────────────────────
@@ -268,8 +269,8 @@ const PensionesScreen = () => {
       <View style={styles.statsRow}>
         {[
           { label: 'Pendientes', value: stats.pendiente, color: '#854d0e', bg: '#fef9c3' },
-          { label: 'Pagados',    value: stats.pagado,    color: '#166534', bg: '#dcfce7' },
-          { label: 'Vencidos',   value: stats.vencido,   color: '#991b1b', bg: '#fee2e2' },
+          { label: 'Pagados', value: stats.pagado, color: '#166534', bg: '#dcfce7' },
+          { label: 'Vencidos', value: stats.vencido, color: '#991b1b', bg: '#fee2e2' },
         ].map(s => (
           <View key={s.label} style={[styles.statCard, { backgroundColor: s.bg }]}>
             <Text style={[styles.statValue, { color: s.color }]}>{s.value}</Text>
@@ -447,10 +448,12 @@ const PensionesScreen = () => {
                 </View>
               </View>
 
-              <Input label="Fecha límite (YYYY-MM-DD) *" placeholder="2025-02-10"
+              <DatePickerField
+                label="Fecha límite *"
                 value={formData.fechaLimite}
-                onChangeText={(t) => setFormData(f => ({ ...f, fechaLimite: t }))}
-                error={formErrors.fechaLimite} />
+                onChange={(val) => setFormData(f => ({ ...f, fechaLimite: val }))}
+                error={formErrors.fechaLimite}
+              />
               <View style={{ height: spacing.md }} />
             </ScrollView>
 

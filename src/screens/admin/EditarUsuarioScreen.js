@@ -8,12 +8,17 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import DatePickerField from '../../components/common/DatePickerField';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { colors, spacing, fontSize, borderRadius } from '../../constants/theme';
 import { usuarioService } from '../../services/usuarioService';
 import { rolService } from '../../services/rolService';
 import { tipoDocumentoService } from '../../services/tipoDocumentoService';
 import { datosAdicionalesService } from '../../services/datosAdicionalesService';
+
+// ─── Opciones fijas ───────────────────────────────────────────────────────────
+const GENEROS      = ['Masculino', 'Femenino'];
+const TIPOS_SANGRE = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
 // ─── Título de sección ────────────────────────────────────────────────────────
 const SectionTitle = ({ icon, title }) => (
@@ -23,50 +28,75 @@ const SectionTitle = ({ icon, title }) => (
   </View>
 );
 
+// ─── Selector de opciones fijas ───────────────────────────────────────────────
+const OptionSelector = ({ label, options, value, onChange }) => (
+  <View style={styles.selectorContainer}>
+    {label && <Text style={styles.fieldLabel}>{label}</Text>}
+    <View style={styles.optionsRow}>
+      {options.map(opt => (
+        <TouchableOpacity
+          key={opt}
+          style={[styles.optionChip, value === opt && styles.optionChipSelected]}
+          onPress={() => onChange(opt)}
+        >
+          <Text style={[styles.optionChipText, value === opt && styles.optionChipTextSelected]}>
+            {opt}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  </View>
+);
+
+// ─── Datos iniciales ──────────────────────────────────────────────────────────
+const DATOS_FORM_INICIAL = {
+  telefono: '', direccion: '', ciudad: '', fechaNacimiento: '',
+  genero: '', eps: '', tipoSangre: '', nombrePadre: '',
+  telefonoPadre: '', nombreMadre: '', telefonoMadre: '',
+  acudiente: '', telefonoAcudiente: '',
+};
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 const EditarUsuarioScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { usuario } = route.params;
 
-  // ─── Form datos básicos ──────────────────────────────────────────────────────
   const [formData, setFormData] = useState({
-    nombre: usuario.nombre || '',
-    apellido: usuario.apellido || '',
-    email: usuario.email || '',
-    password: '',
-    numeroDocumento: usuario.numeroDocumento || '',
-    tipoDocumento: usuario.tipoDocumento || '',
-    roles: usuario.roles || [],
+    nombre: '', apellido: '', email: '', password: '',
+    numeroDocumento: '', tipoDocumento: '', roles: [],
   });
 
-  // ─── Form datos adicionales ──────────────────────────────────────────────────
-  const [datosId, setDatosId] = useState(null);
-  const [datosForm, setDatosForm] = useState({
-    telefono: '',
-    direccion: '',
-    ciudad: '',
-    fechaNacimiento: '',
-    genero: '',
-    eps: '',
-    tipoSangre: '',
-    nombrePadre: '',
-    telefonoPadre: '',
-    nombreMadre: '',
-    telefonoMadre: '',
-    acudiente: '',
-    telefonoAcudiente: '',
-  });
+  const [datosId,   setDatosId]   = useState(null);
+  const [datosForm, setDatosForm] = useState(DATOS_FORM_INICIAL);
 
-  const [errors, setErrors] = useState({});
-  const [saving, setSaving] = useState(false);
-  const [roles, setRoles] = useState([]);
-  const [tiposDocumento, setTiposDocumento] = useState([]);
+  const [errors,           setErrors]           = useState({});
+  const [saving,           setSaving]           = useState(false);
+  const [roles,            setRoles]            = useState([]);
+  const [tiposDocumento,   setTiposDocumento]   = useState([]);
   const [loadingCatalogos, setLoadingCatalogos] = useState(true);
-  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [confirmVisible,   setConfirmVisible]   = useState(false);
 
-  // ─── Cargar catálogos + datos adicionales ────────────────────────────────────
+  // ─── Al cambiar de usuario: resetear form básico ─────────────────────────────
+  useEffect(() => {
+    setFormData({
+      nombre:          usuario.nombre          || '',
+      apellido:        usuario.apellido        || '',
+      email:           usuario.email           || '',
+      password:        '',
+      numeroDocumento: usuario.numeroDocumento || '',
+      tipoDocumento:   usuario.tipoDocumento   || '',
+      roles:           usuario.roles           || [],
+    });
+    setDatosId(null);
+    setDatosForm(DATOS_FORM_INICIAL);
+    setErrors({});
+  }, [usuario.id]);
+
+  // ─── Al cambiar de usuario: recargar catálogos y datos adicionales ────────────
   useEffect(() => {
     const load = async () => {
+      setLoadingCatalogos(true);
       try {
         const [rolesData, tiposData] = await Promise.all([
           rolService.listar(),
@@ -74,38 +104,44 @@ const EditarUsuarioScreen = () => {
         ]);
         setRoles(rolesData);
         setTiposDocumento(tiposData);
-
-        try {
-          const datos = await datosAdicionalesService.obtenerPorUsuario(usuario.id);
-          if (datos) {
-            setDatosId(datos.id);
-            setDatosForm({
-              telefono: datos.telefono || '',
-              direccion: datos.direccion || '',
-              ciudad: datos.ciudad || '',
-              fechaNacimiento: datos.fechaNacimiento || '',
-              genero: datos.genero || '',
-              eps: datos.eps || '',
-              tipoSangre: datos.tipoSangre || '',
-              nombrePadre: datos.nombrePadre || '',
-              telefonoPadre: datos.telefonoPadre || '',
-              nombreMadre: datos.nombreMadre || '',
-              telefonoMadre: datos.telefonoMadre || '',
-              acudiente: datos.acudiente || '',
-              telefonoAcudiente: datos.telefonoAcudiente || '',
-            });
-          }
-        } catch {
-          // Sin datos adicionales aún, es normal
-        }
       } catch (error) {
         console.error('Error cargando catálogos:', error);
-      } finally {
-        setLoadingCatalogos(false);
       }
+
+      // Cargar datos adicionales independientemente de los catálogos
+      try {
+        const datos = await datosAdicionalesService.obtenerPorUsuario(usuario.id);
+        if (datos) {
+          setDatosId(datos.id);
+          setDatosForm({
+            telefono:          datos.telefono          || '',
+            direccion:         datos.direccion         || '',
+            ciudad:            datos.ciudad            || '',
+            fechaNacimiento:   datos.fechaNacimiento   || '',
+            genero:            datos.genero            || '',
+            eps:               datos.eps               || '',
+            tipoSangre:        datos.tipoSangre        || '',
+            nombrePadre:       datos.nombrePadre       || '',
+            telefonoPadre:     datos.telefonoPadre     || '',
+            nombreMadre:       datos.nombreMadre       || '',
+            telefonoMadre:     datos.telefonoMadre     || '',
+            acudiente:         datos.acudiente         || '',
+            telefonoAcudiente: datos.telefonoAcudiente || '',
+          });
+        } else {
+          setDatosId(null);
+          setDatosForm(DATOS_FORM_INICIAL);
+        }
+      } catch {
+        // Sin datos adicionales aún — es normal
+        setDatosId(null);
+        setDatosForm(DATOS_FORM_INICIAL);
+      }
+
+      setLoadingCatalogos(false);
     };
     load();
-  }, []);
+  }, [usuario.id]); // ← depende del usuario, no solo del montaje
 
   const updateField = (field, value) => {
     setFormData(f => ({ ...f, [field]: value }));
@@ -121,32 +157,28 @@ const EditarUsuarioScreen = () => {
     updateField('roles', nuevos);
   };
 
-  // ─── Validar ────────────────────────────────────────────────────────────────
   const validate = () => {
     const e = {};
-    if (!formData.nombre.trim()) e.nombre = 'Requerido';
-    if (!formData.apellido.trim()) e.apellido = 'Requerido';
-    if (!formData.email.trim()) e.email = 'Requerido';
+    if (!formData.nombre.trim())          e.nombre          = 'Requerido';
+    if (!formData.apellido.trim())        e.apellido        = 'Requerido';
+    if (!formData.email.trim())           e.email           = 'Requerido';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = 'Email inválido';
     if (!formData.numeroDocumento.trim()) e.numeroDocumento = 'Requerido';
-    if (!formData.tipoDocumento) e.tipoDocumento = 'Selecciona un tipo';
-    if (formData.roles.length === 0) e.roles = 'Selecciona al menos un rol';
+    if (!formData.tipoDocumento)          e.tipoDocumento   = 'Selecciona un tipo';
+    if (formData.roles.length === 0)      e.roles           = 'Selecciona al menos un rol';
     if (formData.password && formData.password.length < 6)
       e.password = 'Mínimo 6 caracteres';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  // ─── Guardar ─────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     setSaving(true);
     try {
-      // 1. Actualizar datos básicos del usuario
       const payload = { ...formData };
       if (!payload.password?.trim()) delete payload.password;
       await usuarioService.actualizar(usuario.id, payload);
 
-      // 2. Crear o actualizar datos adicionales
       const tieneDatos = Object.values(datosForm).some(v => String(v || '').trim());
       if (datosId) {
         await datosAdicionalesService.actualizar(datosId, datosForm);
@@ -209,7 +241,8 @@ const EditarUsuarioScreen = () => {
               <TouchableOpacity key={td.id}
                 style={[styles.chip, formData.tipoDocumento === td.nombre && styles.chipSelected]}
                 onPress={() => updateField('tipoDocumento', td.nombre)}>
-                <Text style={[styles.chipText, formData.tipoDocumento === td.nombre && styles.chipTextSelected]}>
+                <Text style={[styles.chipText,
+                  formData.tipoDocumento === td.nombre && styles.chipTextSelected]}>
                   {td.nombre}
                 </Text>
               </TouchableOpacity>
@@ -239,8 +272,10 @@ const EditarUsuarioScreen = () => {
         <Card style={styles.section}>
           <SectionTitle icon="shield-outline" title="Roles" />
           {roles.map(rol => (
-            <TouchableOpacity key={rol.id} style={styles.rolItem} onPress={() => toggleRol(rol.nombre)}>
-              <View style={[styles.checkbox, formData.roles.includes(rol.nombre) && styles.checkboxChecked]}>
+            <TouchableOpacity key={rol.id} style={styles.rolItem}
+              onPress={() => toggleRol(rol.nombre)}>
+              <View style={[styles.checkbox,
+                formData.roles.includes(rol.nombre) && styles.checkboxChecked]}>
                 {formData.roles.includes(rol.nombre) && (
                   <Ionicons name="checkmark" size={14} color={colors.white} />
                 )}
@@ -254,6 +289,7 @@ const EditarUsuarioScreen = () => {
         {/* ── Información adicional ─────────────────────────────────────────── */}
         <Card style={styles.section}>
           <SectionTitle icon="information-circle-outline" title="Información Adicional" />
+
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Input label="Teléfono" value={datosForm.telefono}
@@ -265,30 +301,35 @@ const EditarUsuarioScreen = () => {
                 onChangeText={t => updateDatos('ciudad', t)} />
             </View>
           </View>
+
           <Input label="Dirección" value={datosForm.direccion}
             onChangeText={t => updateDatos('direccion', t)} />
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Input label="Fecha de nacimiento (YYYY-MM-DD)" value={datosForm.fechaNacimiento}
-                onChangeText={t => updateDatos('fechaNacimiento', t)} placeholder="1990-01-15" />
-            </View>
-            <View style={{ width: spacing.md }} />
-            <View style={{ flex: 1 }}>
-              <Input label="Género" value={datosForm.genero}
-                onChangeText={t => updateDatos('genero', t)} placeholder="Masculino / Femenino" />
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Input label="EPS" value={datosForm.eps}
-                onChangeText={t => updateDatos('eps', t)} />
-            </View>
-            <View style={{ width: spacing.md }} />
-            <View style={{ flex: 1 }}>
-              <Input label="Tipo de sangre" value={datosForm.tipoSangre}
-                onChangeText={t => updateDatos('tipoSangre', t)} placeholder="O+, A-, B+..." />
-            </View>
-          </View>
+
+          {/* Fecha de nacimiento — DatePicker */}
+          <DatePickerField
+            label="Fecha de nacimiento"
+            value={datosForm.fechaNacimiento}
+            onChange={val => updateDatos('fechaNacimiento', val)}
+          />
+
+          {/* Género — selector fijo */}
+          <OptionSelector
+            label="Género"
+            options={GENEROS}
+            value={datosForm.genero}
+            onChange={val => updateDatos('genero', val)}
+          />
+
+          <Input label="EPS" value={datosForm.eps}
+            onChangeText={t => updateDatos('eps', t)} />
+
+          {/* Tipo de sangre — selector fijo */}
+          <OptionSelector
+            label="Tipo de sangre"
+            options={TIPOS_SANGRE}
+            value={datosForm.tipoSangre}
+            onChange={val => updateDatos('tipoSangre', val)}
+          />
         </Card>
 
         {/* ── Familia / Acudiente ───────────────────────────────────────────── */}
@@ -329,7 +370,7 @@ const EditarUsuarioScreen = () => {
           </View>
         </Card>
 
-        {/* ── Botón ────────────────────────────────────────────────────────── */}
+        {/* ── Botón guardar ─────────────────────────────────────────────────── */}
         <View style={styles.saveContainer}>
           <Button
             title="Guardar Cambios"
@@ -355,21 +396,21 @@ const EditarUsuarioScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.gray[50] },
+  container:       { flex: 1, backgroundColor: colors.gray[50] },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.gray[50] },
-  loadingText: { marginTop: spacing.md, fontSize: fontSize.base, color: colors.gray[600] },
+  loadingText:     { marginTop: spacing.md, fontSize: fontSize.base, color: colors.gray[600] },
 
   header: {
     backgroundColor: colors.white, flexDirection: 'row', alignItems: 'center',
     padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.gray[200],
   },
-  backButton: { marginRight: spacing.md },
-  headerTitle: { flex: 1 },
-  headerText: { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
+  backButton:    { marginRight: spacing.md },
+  headerTitle:   { flex: 1 },
+  headerText:    { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
   headerSubtext: { fontSize: fontSize.sm, color: colors.gray[600], marginTop: spacing.xs },
 
-  content: { flex: 1, padding: spacing.lg },
-  section: { marginBottom: spacing.lg },
+  content:  { flex: 1, padding: spacing.lg },
+  section:  { marginBottom: spacing.lg },
 
   sectionHeader: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
@@ -378,7 +419,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: fontSize.base, fontWeight: '700', color: colors.gray[900] },
 
-  row: { flexDirection: 'row' },
+  row:        { flexDirection: 'row' },
   fieldLabel: { fontSize: fontSize.sm, fontWeight: '600', color: colors.gray[700], marginBottom: spacing.sm },
 
   chipGroup: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
@@ -387,8 +428,8 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full, borderWidth: 1,
     borderColor: colors.gray[300], backgroundColor: colors.white,
   },
-  chipSelected: { backgroundColor: colors.primary[600], borderColor: colors.primary[600] },
-  chipText: { fontSize: fontSize.sm, color: colors.gray[700], fontWeight: '500' },
+  chipSelected:     { backgroundColor: colors.primary[600], borderColor: colors.primary[600] },
+  chipText:         { fontSize: fontSize.sm, color: colors.gray[700], fontWeight: '500' },
   chipTextSelected: { color: colors.white },
   errorText: { fontSize: fontSize.xs, color: colors.red[500], marginTop: -spacing.xs, marginBottom: spacing.xs },
 
@@ -400,6 +441,18 @@ const styles = StyleSheet.create({
   },
   checkboxChecked: { backgroundColor: colors.primary[600], borderColor: colors.primary[600] },
   rolNombre: { fontSize: fontSize.base, color: colors.gray[700] },
+
+  // ── OptionSelector ────────────────────────────────────────────────────────
+  selectorContainer: { marginBottom: spacing.md },
+  optionsRow:        { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  optionChip: {
+    paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2,
+    borderRadius: borderRadius.full, borderWidth: 1,
+    borderColor: colors.gray[300], backgroundColor: colors.white,
+  },
+  optionChipSelected:     { backgroundColor: colors.primary[600], borderColor: colors.primary[600] },
+  optionChipText:         { fontSize: fontSize.sm, color: colors.gray[700], fontWeight: '500' },
+  optionChipTextSelected: { color: colors.white },
 
   saveContainer: { marginTop: spacing.sm },
 });

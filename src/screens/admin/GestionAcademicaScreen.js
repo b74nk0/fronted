@@ -1,10 +1,6 @@
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -21,19 +17,13 @@ const MODULOS = [
         color: '#f59e0b',
         screen: 'Matriculas',
         description: 'Expedientes, pre-inscripciones y promoción',
-      },{
+      },
+      {
         title: 'Materias',
         icon: 'book',
         color: '#0284c7',
         screen: 'Materias',
         description: 'Gestionar las materias activas del sistema',
-      },
-      {
-        title: 'Asignación Docente',
-        icon: 'people-circle-outline',
-        color: '#0bb3f5',
-        screen: 'Cursos',
-        description: 'Asignación de docentes a cursos y materias'
       },
       {
         title: 'Planes de Estudio',
@@ -49,14 +39,32 @@ const MODULOS = [
         screen: 'Competencias',
         description: 'Criterios de evaluación por materia y grado',
       },
-      
+    ],
+  },
+  {
+    seccion: 'Docentes y Cursos',
+    descripcion: 'Organización de grupos y asignación de docentes',
+    items: [
+      {
+        title: 'Cursos y Grupos',
+        icon: 'people',
+        color: '#0891b2',
+        screen: 'Cursos',
+        description: 'Crear grupos (5°A, 5°B) y asignar director de grupo',
+      },
+      {
+        title: 'Asignación de Docentes',
+        icon: 'person-circle',
+        color: '#7c3aed',
+        screen: 'Cursos',
+        description: 'Asignar docentes a materias por curso',
+      },
     ],
   },
   {
     seccion: 'Próximamente',
     descripcion: 'Módulos en desarrollo',
     items: [
-      
       {
         title: 'Asistencia y Disciplina',
         icon: 'checkmark-circle',
@@ -100,11 +108,7 @@ const GestionAcademicaScreen = () => {
         activeOpacity={disabled ? 1 : 0.7}
       >
         <View style={[styles.iconContainer, { backgroundColor: disabled ? colors.gray[200] : item.color }]}>
-          <Ionicons
-            name={item.icon}
-            size={28}
-            color={disabled ? colors.gray[400] : colors.white}
-          />
+          <Ionicons name={item.icon} size={28} color={disabled ? colors.gray[400] : colors.white} />
         </View>
         <View style={styles.cardContent}>
           <View style={styles.cardTitleRow}>
@@ -130,7 +134,6 @@ const GestionAcademicaScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerIconContainer}>
           <Ionicons name="school" size={28} color={colors.primary[600]} />
@@ -160,77 +163,44 @@ const GestionAcademicaScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.gray[50] },
   header: {
-    backgroundColor: colors.white,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-    gap: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
+    backgroundColor: colors.white, flexDirection: 'row', alignItems: 'center',
+    padding: spacing.lg, gap: spacing.md,
+    borderBottomWidth: 1, borderBottomColor: colors.gray[200],
   },
   headerIconContainer: {
-    width: 52,
-    height: 52,
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.primary[50],
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 52, height: 52, borderRadius: borderRadius.lg,
+    backgroundColor: colors.primary[50], justifyContent: 'center', alignItems: 'center',
   },
-  headerText: { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
+  headerText:    { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
   headerSubtext: { fontSize: fontSize.sm, color: colors.gray[500], marginTop: 2 },
-  content: { flex: 1 },
-  seccion: { padding: spacing.lg, paddingBottom: 0 },
-  seccionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.gray[900],
-    marginBottom: spacing.xs,
-  },
-  seccionDesc: {
-    fontSize: fontSize.sm,
-    color: colors.gray[500],
-    marginBottom: spacing.md,
-  },
+  content:  { flex: 1 },
+  seccion:  { padding: spacing.lg, paddingBottom: 0 },
+  seccionTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.gray[900], marginBottom: spacing.xs },
+  seccionDesc:  { fontSize: fontSize.sm, color: colors.gray[500], marginBottom: spacing.md },
   seccionItems: { gap: spacing.sm },
   card: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
-    marginBottom: spacing.sm,
+    backgroundColor: colors.white, borderRadius: borderRadius.lg,
+    padding: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08, shadowRadius: 3, elevation: 2, marginBottom: spacing.sm,
   },
   cardDisabled: {
-    backgroundColor: colors.gray[50],
-    shadowOpacity: 0,
-    elevation: 0,
-    borderWidth: 1,
-    borderColor: colors.gray[100],
+    backgroundColor: colors.gray[50], shadowOpacity: 0, elevation: 0,
+    borderWidth: 1, borderColor: colors.gray[100],
   },
   iconContainer: {
-    width: 52,
-    height: 52,
-    borderRadius: borderRadius.lg,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 52, height: 52, borderRadius: borderRadius.lg,
+    justifyContent: 'center', alignItems: 'center',
   },
-  cardContent: { flex: 1 },
+  cardContent:  { flex: 1 },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: 4 },
-  cardTitle: { fontSize: fontSize.base, fontWeight: '600', color: colors.gray[900] },
+  cardTitle:         { fontSize: fontSize.base, fontWeight: '600', color: colors.gray[900] },
   cardTitleDisabled: { color: colors.gray[400] },
-  cardDescription: { fontSize: fontSize.sm, color: colors.gray[500], lineHeight: 18 },
+  cardDescription:         { fontSize: fontSize.sm, color: colors.gray[500], lineHeight: 18 },
   cardDescriptionDisabled: { color: colors.gray[400] },
   proximamenteBadge: {
-    backgroundColor: colors.gray[100],
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
+    backgroundColor: colors.gray[100], paddingHorizontal: spacing.sm,
+    paddingVertical: 2, borderRadius: borderRadius.sm,
   },
   proximamenteText: { fontSize: fontSize.xs, color: colors.gray[500], fontWeight: '500' },
 });

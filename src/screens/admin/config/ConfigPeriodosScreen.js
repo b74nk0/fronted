@@ -66,10 +66,10 @@ const ConfigPeriodosScreen = () => {
     if (periodo) {
       setEditingPeriodo(periodo);
       setFormData({
-        nombre: periodo.nombre,
-        fechaInicio: periodo.fechaInicio,
-        fechaFin: periodo.fechaFin,
-        activo: periodo.activo,
+        nombre: periodo.nombre || '',
+        fechaInicio: periodo.fechaInicio ||'',
+        fechaFin: periodo.fechaFin ||'',
+        activo: periodo.activo ?? true,
       });
     } else {
       setEditingPeriodo(null);

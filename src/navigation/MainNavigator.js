@@ -29,8 +29,12 @@ import PlanesEstudioScreen from '../screens/academic/config/PlanesEstudioScreen'
 import CompetenciasScreen from '../screens/academic/config/CompetenciasScreen';
 import DocumentacionScreen from '../screens/academic/DocumentacionScreen';
 import DocentesScreen from '../screens/academic/DocentesScreen';
-import EstudiantesScreen from '../screens/academic/EstudiantesScreen';
 import MatriculasScreen from '../screens/academic/MatriculasScreen';
+import CursosScreen from '../screens/admin/CursosScreen';
+import AsignacionDocenteScreen from '../screens/admin/AsignacionDocenteScreen';
+
+//Screens - Docente
+import PerfilEstudianteScreen from '../screens/academic/PerfilEstudianteScreen';
 
 // Screens - Finance
 import PensionesScreen from '../screens/finance/PensionesScreen';
@@ -42,6 +46,7 @@ import CalendarioScreen from '../screens/calendario/CalendarioScreen';
 
 // Custom Drawer
 import CustomDrawerContent from '../components/layout/CustomDrawerContent';
+import MisCursosDocenteScreen from '../screens/academic/MisCursosDocenteScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -116,6 +121,10 @@ const MainNavigator = () => {
             options={{ drawerItemStyle: { display: 'none' }, title: 'Competencias y Logros' }} />
           <Drawer.Screen name="Matriculas" component={MatriculasScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Matrículas' }} />
+          <Drawer.Screen name="Cursos" component={CursosScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Cursos' }} />
+          <Drawer.Screen name="AsignacionDocente" component={AsignacionDocenteScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Asignación Docente' }} />
 
           {/* Ocultas - Configuración */}
           <Drawer.Screen name="ConfigInstitucion" component={ConfigInstitucionScreen}
@@ -138,12 +147,14 @@ const MainNavigator = () => {
       {/* ── DOCENTE ─────────────────────────────────────────────────────── */}
       {isDocente && (
         <>
-          <Drawer.Screen name="GestionAcademicaDocente" component={GestionAcademicaScreen}
-            options={{ title: 'Gestión Académica', drawerIcon: ({ color, size }) => <Ionicons name="school" size={size} color={color} /> }} />
+          <Drawer.Screen name="GestionAcademicaDocente" component={MisCursosDocenteScreen}
+            options={{ title: 'Mis Cursos', drawerIcon: ({ color, size }) => <Ionicons name="school" size={size} color={color} /> }} />
           <Drawer.Screen name="Usuarios" component={UsuariosScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Estudiantes' }} />
           <Drawer.Screen name="Documentacion" component={DocumentacionScreen}
             options={{ title: 'Documentación', drawerIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} /> }} />
+          <Drawer.Screen name="PerfilEstudiante" component={PerfilEstudianteScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Perfil Estudiante' }} />
         </>
       )}
 
@@ -156,7 +167,7 @@ const MainNavigator = () => {
             options={{ title: 'Certificados', drawerIcon: ({ color, size }) => <Ionicons name="ribbon" size={size} color={color} /> }} />
           <Drawer.Screen name="Docentes" component={DocentesScreen}
             options={{ title: 'Docentes', drawerIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} /> }} />
-          <Drawer.Screen name="Estudiantes" component={EstudiantesScreen}
+          <Drawer.Screen name="Estudiantes" component={UsuariosScreen}
             options={{ title: 'Compañeros', drawerIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} /> }} />
         </>
       )}

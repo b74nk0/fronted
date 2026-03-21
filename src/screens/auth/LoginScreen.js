@@ -103,16 +103,12 @@ const LoginScreen = () => {
 
         {/* Logo y Título */}
         <View style={styles.header}>
-          <Image
-            source={require('../../../assets/images/aulalink-logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          
           <View style={styles.iconContainer}>
             <Ionicons name="log-in-outline" size={48} color={colors.primary[600]} />
           </View>
           <Text style={styles.title}>Iniciar Sesión</Text>
-          <Text style={styles.subtitle}>Accede a tu cuenta de AulaLink</Text>
+          <Text style={styles.subtitle}>Accede a tu cuenta de Scolaris</Text>
         </View>
 
         {/* Formulario */}
