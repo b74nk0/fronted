@@ -21,14 +21,17 @@ const FORM_INITIAL = {
   materia: null, grado: null,
 };
 
-// ─── Dropdown selector reutilizable ──────────────────────────────────────────
+// ─── Dropdown selector reutilizable (inline, sin posición absoluta) ───────────
 const DropdownSelector = ({ label, placeholder, value, options, onSelect, error, disabled }) => {
   const [open, setOpen] = useState(false);
   return (
     <View style={ddStyles.container}>
       {label && <Text style={ddStyles.label}>{label}</Text>}
       <TouchableOpacity
-        style={[ddStyles.trigger, error && ddStyles.triggerError, disabled && ddStyles.triggerDisabled]}
+        style={[ddStyles.trigger,
+          open && ddStyles.triggerOpen,
+          error && ddStyles.triggerError,
+          disabled && ddStyles.triggerDisabled]}
         onPress={() => !disabled && setOpen(!open)}
         activeOpacity={disabled ? 1 : 0.7}
       >
@@ -39,27 +42,25 @@ const DropdownSelector = ({ label, placeholder, value, options, onSelect, error,
           color={disabled ? colors.gray[300] : colors.gray[500]} />
       </TouchableOpacity>
       {error && <Text style={ddStyles.errorText}>{error}</Text>}
+      {/* Lista inline — empuja el contenido hacia abajo, no flota encima */}
       {open && (
         <View style={ddStyles.dropdown}>
-          <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
-            {options.length === 0 ? (
-              <Text style={ddStyles.emptyText}>Sin opciones disponibles</Text>
-            ) : (
-              options.map(opt => (
-                <TouchableOpacity key={opt.id} style={[ddStyles.option,
-                  value?.id === opt.id && ddStyles.optionSelected]}
-                  onPress={() => { onSelect(opt); setOpen(false); }}>
-                  <Text style={[ddStyles.optionText, value?.id === opt.id && ddStyles.optionTextSelected]}>
-                    {opt.nombre}
-                    {opt.nivelNombre ? ` (${opt.nivelNombre})` : ''}
-                  </Text>
-                  {value?.id === opt.id && (
-                    <Ionicons name="checkmark" size={16} color={colors.primary[600]} />
-                  )}
-                </TouchableOpacity>
-              ))
-            )}
-          </ScrollView>
+          {options.length === 0 ? (
+            <Text style={ddStyles.emptyText}>Sin opciones disponibles</Text>
+          ) : (
+            options.map(opt => (
+              <TouchableOpacity key={opt.id}
+                style={[ddStyles.option, value?.id === opt.id && ddStyles.optionSelected]}
+                onPress={() => { onSelect(opt); setOpen(false); }}>
+                <Text style={[ddStyles.optionText, value?.id === opt.id && ddStyles.optionTextSelected]}>
+                  {opt.nombre}{opt.nivelNombre ? ` (${opt.nivelNombre})` : ''}
+                </Text>
+                {value?.id === opt.id && (
+                  <Ionicons name="checkmark" size={16} color={colors.primary[600]} />
+                )}
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       )}
     </View>
@@ -67,26 +68,25 @@ const DropdownSelector = ({ label, placeholder, value, options, onSelect, error,
 };
 
 const ddStyles = StyleSheet.create({
-  container:    { marginBottom: spacing.md, zIndex: 10 },
-  label:        { fontSize: fontSize.sm, fontWeight: '600', color: colors.gray[700], marginBottom: spacing.xs },
+  container:       { marginBottom: spacing.md },
+  label:           { fontSize: fontSize.sm, fontWeight: '600', color: colors.gray[700], marginBottom: spacing.xs },
   trigger: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     borderWidth: 1, borderColor: colors.gray[300], borderRadius: borderRadius.md,
     paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2,
     backgroundColor: colors.white, minHeight: 44,
   },
+  triggerOpen:     { borderColor: colors.primary[400], borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
   triggerError:    { borderColor: colors.red[500] },
   triggerDisabled: { backgroundColor: colors.gray[50], borderColor: colors.gray[100] },
-  triggerText:  { fontSize: fontSize.base, color: colors.gray[900], flex: 1 },
-  placeholder:  { color: colors.gray[400] },
-  errorText:    { fontSize: fontSize.xs, color: colors.red[500], marginTop: spacing.xs },
+  triggerText:     { fontSize: fontSize.base, color: colors.gray[900], flex: 1 },
+  placeholder:     { color: colors.gray[400] },
+  errorText:       { fontSize: fontSize.xs, color: colors.red[500], marginTop: spacing.xs },
   dropdown: {
-    position: 'absolute', top: '100%', left: 0, right: 0,
-    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[200],
-    borderRadius: borderRadius.md, zIndex: 999,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1, shadowRadius: 8, elevation: 8,
-    marginTop: 2,
+    borderWidth: 1, borderTopWidth: 0, borderColor: colors.primary[200],
+    borderBottomLeftRadius: borderRadius.md, borderBottomRightRadius: borderRadius.md,
+    backgroundColor: colors.white, marginBottom: spacing.xs,
+    maxHeight: 220, overflow: 'hidden',
   },
   option: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
