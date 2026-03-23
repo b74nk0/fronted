@@ -1,12 +1,11 @@
 {
   "expo": {
-      "experiments": {
+    "experiments": {
       "tsconfigPaths": true
     },
     "privacy": "unlisted",
-
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Scolaris",
+    "slug": "scolaris",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -31,7 +30,8 @@
       "package": "shirosolutions.scolaris"
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "name": "Scolaris",
+      "favicon": "./assets/images/Scolaris-logo.png",
       "bundler": "metro"
     },
     "plugins": [
