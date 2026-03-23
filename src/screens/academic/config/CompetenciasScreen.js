@@ -45,22 +45,29 @@ const DropdownSelector = ({ label, placeholder, value, options, onSelect, error,
       {/* Lista inline — empuja el contenido hacia abajo, no flota encima */}
       {open && (
         <View style={ddStyles.dropdown}>
-          {options.length === 0 ? (
-            <Text style={ddStyles.emptyText}>Sin opciones disponibles</Text>
-          ) : (
-            options.map(opt => (
-              <TouchableOpacity key={opt.id}
-                style={[ddStyles.option, value?.id === opt.id && ddStyles.optionSelected]}
-                onPress={() => { onSelect(opt); setOpen(false); }}>
-                <Text style={[ddStyles.optionText, value?.id === opt.id && ddStyles.optionTextSelected]}>
-                  {opt.nombre}{opt.nivelNombre ? ` (${opt.nivelNombre})` : ''}
-                </Text>
-                {value?.id === opt.id && (
-                  <Ionicons name="checkmark" size={16} color={colors.primary[600]} />
-                )}
-              </TouchableOpacity>
-            ))
-          )}
+          <ScrollView
+            style={{ maxHeight: 220 }}
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={true}
+          >
+            {options.length === 0 ? (
+              <Text style={ddStyles.emptyText}>Sin opciones disponibles</Text>
+            ) : (
+              options.map(opt => (
+                <TouchableOpacity key={opt.id}
+                  style={[ddStyles.option, value?.id === opt.id && ddStyles.optionSelected]}
+                  onPress={() => { onSelect(opt); setOpen(false); }}>
+                  <Text style={[ddStyles.optionText, value?.id === opt.id && ddStyles.optionTextSelected]}>
+                    {opt.nombre}{opt.nivelNombre ? ` (${opt.nivelNombre})` : ''}
+                  </Text>
+                  {value?.id === opt.id && (
+                    <Ionicons name="checkmark" size={16} color={colors.primary[600]} />
+                  )}
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
         </View>
       )}
     </View>
@@ -86,7 +93,6 @@ const ddStyles = StyleSheet.create({
     borderWidth: 1, borderTopWidth: 0, borderColor: colors.primary[200],
     borderBottomLeftRadius: borderRadius.md, borderBottomRightRadius: borderRadius.md,
     backgroundColor: colors.white, marginBottom: spacing.xs,
-    maxHeight: 220, overflow: 'hidden',
   },
   option: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
