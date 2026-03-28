@@ -3,15 +3,14 @@
     "experiments": {
       "tsconfigPaths": true
     },
-    "privacy": "unlisted",
     "name": "Scolaris",
     "slug": "scolaris",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/Scolaris-logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "",
       "resizeMode": "contain",
       "backgroundColor": "#0ea5e9"
     },
@@ -24,7 +23,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/images/Scolaris-logo.png",
         "backgroundColor": "#0ea5e9"
       },
       "package": "shirosolutions.scolaris"

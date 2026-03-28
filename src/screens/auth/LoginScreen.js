@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  Alert,
-  TouchableOpacity,
+  View, Text, StyleSheet, ScrollView,
+  KeyboardAvoidingView, Platform, TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -20,64 +13,38 @@ import { colors, spacing, fontSize, borderRadius } from '../../constants/theme';
 const LoginScreen = () => {
   const navigation = useNavigation();
   const { login, isAuthenticated } = useAuth();
-  
-  const [email, setEmail] = useState('');
+
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [errors,   setErrors]   = useState({});
+  const [loginError, setLoginError] = useState(''); // error general del login
+  const [loading,  setLoading]  = useState(false);
 
   const validateForm = () => {
-    const newErrors = {};
-
-    if (!email.trim()) {
-      newErrors.email = 'El correo es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'El correo no es válido';
-    }
-
-    if (!password) {
-      newErrors.password = 'La contraseña es requerida';
-    } else if (password.length < 3) {
-      newErrors.password = 'La contraseña debe tener al menos 3 caracteres';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const e = {};
+    if (!email.trim())
+      e.email = 'El correo es requerido';
+    else if (!/\S+@\S+\.\S+/.test(email))
+      e.email = 'El correo no es válido';
+    if (!password)
+      e.password = 'La contraseña es requerida';
+    else if (password.length < 3)
+      e.password = 'La contraseña debe tener al menos 3 caracteres';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleLogin = async () => {
-    console.log('=== LOGIN ATTEMPT ===');
-    console.log('Email:', email);
-    console.log('Is Authenticated Before:', isAuthenticated);
-    
-    if (!validateForm()) {
-      console.log('Validation failed');
-      return;
-    }
+    setLoginError('');
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
-      console.log('Calling login function...');
-      const result = await login(email, password);
-      console.log('Login successful, result:', result);
-      console.log('Is Authenticated After:', isAuthenticated);
-      
-      // Pequeño delay para asegurar que el estado se actualiza
-      setTimeout(() => {
-        console.log('Checking authentication after delay...');
-        // No necesitamos navegar manualmente, AppNavigator lo hará
-      }, 100);
-      
+      await login(email, password);
     } catch (error) {
-      console.error('Login failed:', error);
-      console.error('Error details:', error.response?.data);
-      
-      Alert.alert(
-        'Error de autenticación',
-        error.response?.data?.message || 
-        'Credenciales inválidas. Por favor, verifica tu correo y contraseña.',
-        [{ text: 'Entendido' }]
-      );
+      const msg = error.response?.data?.message ||
+        'Credenciales inválidas. Verifica tu correo y contraseña.';
+      setLoginError(msg);
     } finally {
       setLoading(false);
     }
@@ -86,24 +53,14 @@ const LoginScreen = () => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Header con botón de volver */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
-        </TouchableOpacity>
+        keyboardShouldPersistTaps="handled">
 
-        {/* Logo y Título */}
+        {/* Header */}
         <View style={styles.header}>
-          
           <View style={styles.iconContainer}>
             <Ionicons name="log-in-outline" size={48} color={colors.primary[600]} />
           </View>
@@ -113,12 +70,22 @@ const LoginScreen = () => {
 
         {/* Formulario */}
         <View style={styles.form}>
+
+          {/* Banner de error de login */}
+          {loginError ? (
+            <View style={styles.errorBanner}>
+              <Ionicons name="alert-circle-outline" size={18} color={colors.red[600]} />
+              <Text style={styles.errorBannerText}>{loginError}</Text>
+            </View>
+          ) : null}
+
           <Input
             label="Correo Electrónico"
-            placeholder="ejemplo@aulalink.com"
+            placeholder="ejemplo@scolaris.com"
             value={email}
-            onChangeText={(text) => {
-              setEmail(text);
+            onChangeText={t => {
+              setEmail(t);
+              setLoginError('');
               if (errors.email) setErrors({ ...errors, email: null });
             }}
             leftIcon="mail-outline"
@@ -131,8 +98,9 @@ const LoginScreen = () => {
             label="Contraseña"
             placeholder="••••••••"
             value={password}
-            onChangeText={(text) => {
-              setPassword(text);
+            onChangeText={t => {
+              setPassword(t);
+              setLoginError('');
               if (errors.password) setErrors({ ...errors, password: null });
             }}
             leftIcon="lock-closed-outline"
@@ -142,8 +110,7 @@ const LoginScreen = () => {
 
           <TouchableOpacity
             style={styles.forgotPassword}
-            onPress={() => navigation.navigate('ForgotPassword')}
-          >
+            onPress={() => navigation.navigate('ForgotPassword')}>
             <Text style={styles.forgotPasswordText}>
               ¿Olvidaste tu contraseña?
             </Text>
@@ -152,7 +119,6 @@ const LoginScreen = () => {
           <Button
             title={loading ? 'Ingresando...' : 'Ingresar'}
             onPress={handleLogin}
-            loading={loading}
             disabled={loading}
           />
         </View>
@@ -170,77 +136,36 @@ const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
+  container:     { flex: 1, backgroundColor: colors.white },
   scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
+    flexGrow: 1, paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl, paddingBottom: spacing.xl,
     justifyContent: 'center',
-    marginBottom: spacing.lg,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  logo: {
-    width: 180,
-    height: 60,
-    marginBottom: spacing.lg,
-  },
+  header: { alignItems: 'center', marginBottom: spacing.xl },
   iconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: borderRadius.full,
+    width: 96, height: 96, borderRadius: borderRadius.full,
     backgroundColor: colors.primary[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
+    justifyContent: 'center', alignItems: 'center', marginBottom: spacing.lg,
   },
-  title: {
-    fontSize: fontSize.xxxl,
-    fontWeight: 'bold',
-    color: colors.gray[900],
-    marginBottom: spacing.xs,
+  title:    { fontSize: fontSize.xxxl, fontWeight: 'bold', color: colors.gray[900], marginBottom: spacing.xs },
+  subtitle: { fontSize: fontSize.base, color: colors.gray[600], textAlign: 'center' },
+
+  form: { width: '100%', maxWidth: 400, alignSelf: 'center' },
+
+  errorBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    backgroundColor: '#fee2e2', borderWidth: 1, borderColor: '#fca5a5',
+    borderRadius: borderRadius.lg, padding: spacing.md, marginBottom: spacing.md,
   },
-  subtitle: {
-    fontSize: fontSize.base,
-    color: colors.gray[600],
-    textAlign: 'center',
-  },
-  form: {
-    width: '100%',
-    maxWidth: 400,
-    alignSelf: 'center',
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: spacing.lg,
-  },
-  forgotPasswordText: {
-    fontSize: fontSize.sm,
-    color: colors.primary[600],
-    fontWeight: '500',
-  },
-  footer: {
-    marginTop: spacing.xl,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: fontSize.sm,
-    color: colors.gray[600],
-  },
-  footerLink: {
-    color: colors.primary[600],
-    fontWeight: '600',
-  },
+  errorBannerText: { flex: 1, fontSize: fontSize.sm, color: colors.red[700], fontWeight: '500' },
+
+  forgotPassword: { alignSelf: 'flex-end', marginBottom: spacing.lg },
+  forgotPasswordText: { fontSize: fontSize.sm, color: colors.primary[600], fontWeight: '500' },
+
+  footer:     { marginTop: spacing.xl, alignItems: 'center' },
+  footerText: { fontSize: fontSize.sm, color: colors.gray[600] },
+  footerLink: { color: colors.primary[600], fontWeight: '600' },
 });
 
 export default LoginScreen;
