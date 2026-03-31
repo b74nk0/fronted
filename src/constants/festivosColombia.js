@@ -40,6 +40,25 @@ export const FESTIVOS_COLOMBIA = [
   { fecha: '2026-11-16', nombre: 'Independencia de Cartagena' },
   { fecha: '2026-12-08', nombre: 'Inmaculada Concepción' },
   { fecha: '2026-12-25', nombre: 'Navidad' },
+  // 2027
+  { fecha: '2027-01-01', nombre: 'Año Nuevo' },
+  { fecha: '2027-01-10', nombre: 'Reyes Magos' },
+  { fecha: '2027-03-20', nombre: 'San José' },
+  { fecha: '2027-04-13', nombre: 'Jueves Santo' },
+  { fecha: '2027-04-14', nombre: 'Viernes Santo' },
+  { fecha: '2027-05-01', nombre: 'Día del Trabajo' },
+  { fecha: '2027-05-29', nombre: 'Ascensión del Señor' },
+  { fecha: '2027-06-19', nombre: 'Corpus Christi' },
+  { fecha: '2027-06-26', nombre: 'Sagrado Corazón' },
+  { fecha: '2027-07-03', nombre: 'San Pedro y San Pablo' },
+  { fecha: '2027-07-20', nombre: 'Día de la Independencia' },
+  { fecha: '2027-08-07', nombre: 'Batalla de Boyacá' },
+  { fecha: '2027-08-21', nombre: 'Asunción de la Virgen' },
+  { fecha: '2027-10-16', nombre: 'Día de la Raza' },
+  { fecha: '2027-11-06', nombre: 'Todos los Santos' },
+  { fecha: '2027-11-13', nombre: 'Independencia de Cartagena' },
+  { fecha: '2027-12-08', nombre: 'Inmaculada Concepción' },
+  { fecha: '2027-12-25', nombre: 'Navidad' },
 ];
 
 export const esFestivo = (fecha) => {

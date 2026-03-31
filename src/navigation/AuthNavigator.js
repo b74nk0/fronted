@@ -17,7 +17,7 @@ const AuthNavigator = () => {
       <Stack.Screen 
         name="Landing" 
         component={LandingScreen}
-        options={{ title: 'AulaLink' }}
+        options={{ title: 'Scolaris' }}
       />
       <Stack.Screen 
         name="Login" 

@@ -167,8 +167,6 @@ const MainNavigator = () => {
             options={{ title: 'Certificados', drawerIcon: ({ color, size }) => <Ionicons name="ribbon" size={size} color={color} /> }} />
           <Drawer.Screen name="Docentes" component={DocentesScreen}
             options={{ title: 'Docentes', drawerIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} /> }} />
-          <Drawer.Screen name="Estudiantes" component={UsuariosScreen}
-            options={{ title: 'Compañeros', drawerIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} /> }} />
         </>
       )}
 
