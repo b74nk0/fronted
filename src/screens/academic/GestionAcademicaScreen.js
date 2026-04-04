@@ -49,21 +49,19 @@ const MODULOS = [
         screen: 'Competencias',
         description: 'Criterios de evaluación por materia y grado',
       },
-      
+      {
+        title: 'Registro de Asistencia',
+        icon: 'checkmark-circle',
+        color: '#dc2626',
+        screen: 'Asistencia',
+        description: 'Control de asistencia diaria por curso',
+      },
     ],
   },
   {
     seccion: 'Próximamente',
     descripcion: 'Módulos en desarrollo',
     items: [
-      
-      {
-        title: 'Asistencia y Disciplina',
-        icon: 'checkmark-circle',
-        color: '#dc2626',
-        screen: null,
-        description: 'Registro de inasistencias y observador',
-      },
       {
         title: 'Calificaciones y Boletines',
         icon: 'stats-chart',

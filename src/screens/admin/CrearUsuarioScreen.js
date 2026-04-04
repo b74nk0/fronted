@@ -89,7 +89,7 @@ const CrearUsuarioScreen = () => {
     if (!formData.email.trim()) e.email = 'Requerido';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = 'Email inválido';
     if (!formData.password.trim()) e.password = 'Requerido';
-    else if (formData.password.length < 6) e.password = 'Mínimo 6 caracteres';
+    else if (formData.password.length < 8) e.password = 'Mínimo 8 caracteres';
     if (!formData.numeroDocumento.trim()) e.numeroDocumento = 'Requerido';
     if (!formData.tipoDocumento) e.tipoDocumento = 'Selecciona un tipo';
     if (formData.roles.length === 0) e.roles = 'Selecciona al menos un rol';
@@ -215,7 +215,7 @@ const CrearUsuarioScreen = () => {
           />
           <Input
             label="Contraseña *"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres"
             value={formData.password}
             onChangeText={(t) => updateField('password', t)}
             error={errors.password}

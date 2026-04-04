@@ -20,7 +20,7 @@ import { colors, spacing, fontSize, borderRadius } from '../../../constants/them
 import { tipoDocumentoService } from '../../../services/tipoDocumentoService';
 
 // Tipos predefinidos que vienen del seed del backend
-const TIPOS_SISTEMA = ['CC', 'TI', 'CE', 'PA', 'RC'];
+const TIPOS_SISTEMA = ['CC', 'TI'];
 
 const FORM_INITIAL = { nombre: '' };
 
@@ -243,7 +243,7 @@ const ConfigTiposDocumentoScreen = () => {
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={20} color={colors.primary[600]} />
           <Text style={styles.infoText}>
-            Los tipos predeterminados (CC, TI, CE, PA, RC) no se pueden eliminar. Puedes agregar tipos adicionales según las necesidades de tu institución.
+            Los tipos predeterminados (CC, TI) no se pueden eliminar. Puedes agregar tipos adicionales según las necesidades de tu institución.
           </Text>
         </View>
 

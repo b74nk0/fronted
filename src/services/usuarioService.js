@@ -3,12 +3,18 @@ import { api } from './api';
 export const usuarioService = {
   listar: async () => {
     const response = await api.get('/usuarios');
-    return response.data;
+    // El backend retorna un Page<UsuarioDto>, extraemos el contenido
+    const data = response.data;
+    if (data && Array.isArray(data.content)) {
+      return data.content;
+    }
+    return Array.isArray(data) ? data : [];
   },
 
   listarEstudiantes: async () => {
     const response = await api.get('/usuarios/estudiantes');
-    return response.data;
+    // Este endpoint retorna un array directo (List<UsuarioDto>)
+    return response.data || [];
   },
 
   me: async () => {
@@ -17,7 +23,13 @@ export const usuarioService = {
   },
 
   crear: async (dto) => {
-    const response = await api.post('/usuarios', dto);
+    // Mapear password a passwordHash para el backend
+    const payload = {
+      ...dto,
+      passwordHash: dto.password,
+    };
+    delete payload.password;
+    const response = await api.post('/usuarios', payload);
     return response.data;
   },
 

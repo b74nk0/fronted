@@ -32,9 +32,11 @@ import DocentesScreen from '../screens/academic/DocentesScreen';
 import MatriculasScreen from '../screens/academic/MatriculasScreen';
 import CursosScreen from '../screens/admin/CursosScreen';
 import AsignacionDocenteScreen from '../screens/admin/AsignacionDocenteScreen';
+import AsistenciaScreen from '../screens/academic/AsistenciaScreen';
 
 //Screens - Docente
 import PerfilEstudianteScreen from '../screens/academic/PerfilEstudianteScreen';
+import MiAsistenciaScreen from '../screens/dashboard/MiAsistenciaScreen';
 
 // Screens - Finance
 import PensionesScreen from '../screens/finance/PensionesScreen';
@@ -125,6 +127,8 @@ const MainNavigator = () => {
             options={{ drawerItemStyle: { display: 'none' }, title: 'Cursos' }} />
           <Drawer.Screen name="AsignacionDocente" component={AsignacionDocenteScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Asignación Docente' }} />
+          <Drawer.Screen name="Asistencia" component={AsistenciaScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Registro de Asistencia' }} />
 
           {/* Ocultas - Configuración */}
           <Drawer.Screen name="ConfigInstitucion" component={ConfigInstitucionScreen}
@@ -170,8 +174,11 @@ const MainNavigator = () => {
         </>
       )}
 
-      {/* ── PANTALLAS COMPARTIDAS (todos los roles) ──────────────────────
-           Siempre al final, ocultas del drawer o visibles según convenga  */}
+      {/* ── PANTALLAS OCULTAS (siempre registradas, accesibles por navegación) ── */}
+      <Drawer.Screen name="MiAsistencia" component={MiAsistenciaScreen}
+        options={{ drawerItemStyle: { display: 'none' }, title: 'Mi Asistencia' }} />
+
+      {/* ── PANTALLAS COMPARTIDAS (todos los roles) ────────────────────── */}
       <Drawer.Screen
         name="Calendario"
         component={CalendarioScreen}

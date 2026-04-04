@@ -90,13 +90,17 @@ const CursosScreen = () => {
         nivelService.listar(),
         usuarioService.listar(),
       ]);
-      setCursos(cursosData);
-      setNiveles(nivelesData);
-      setDocentes(usuariosData.filter(u =>
+      setCursos(Array.isArray(cursosData) ? cursosData : []);
+      setNiveles(Array.isArray(nivelesData) ? nivelesData : []);
+      const usuariosArray = Array.isArray(usuariosData) ? usuariosData : [];
+      setDocentes(usuariosArray.filter(u =>
         u.roles?.some(r => (typeof r === 'string' ? r : r.nombre)?.toLowerCase() === 'docente')
       ));
     } catch (e) {
       console.error('Error cargando cursos:', e);
+      setCursos([]);
+      setNiveles([]);
+      setDocentes([]);
     } finally {
       setLoading(false);
     }
@@ -279,7 +283,7 @@ const CursosScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => navigation.navigate('GestionAcademica')} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
         </TouchableOpacity>
         <View style={styles.headerTitle}>

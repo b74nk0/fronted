@@ -99,7 +99,7 @@ const DashboardScreen = () => {
       title: 'Asistencia',
       icon: 'checkmark-circle',
       color: '#16a34a',
-      screen: 'GestionAcademicaDocente',
+      screen: 'MiAsistencia',
       description: 'Tomar asistencia',
     },
     {

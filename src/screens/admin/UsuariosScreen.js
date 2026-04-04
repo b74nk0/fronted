@@ -14,11 +14,11 @@ import { useAuth } from '../../context/AuthContext';
 
 const getRolColor = (rol) => {
   const map = {
-    Administrador:  '#dc2626',
+    Administrador: '#dc2626',
     Administrativo: '#0284c7',
-    Docente:        '#9333ea',
-    Estudiante:     '#16a34a',
-    Padre:          '#f59e0b',
+    Docente: '#9333ea',
+    Estudiante: '#16a34a',
+    Padre: '#f59e0b',
   };
   return map[rol] || '#64748b';
 };
@@ -88,16 +88,16 @@ const UsuariosScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
 
-  const [usuarios,   setUsuarios]   = useState([]);
-  const [filtrados,  setFiltrados]  = useState([]);
-  const [loading,    setLoading]    = useState(false);
+  const [usuarios, setUsuarios] = useState([]);
+  const [filtrados, setFiltrados] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [busqueda,   setBusqueda]   = useState('');
+  const [busqueda, setBusqueda] = useState('');
 
   // Modal eliminar
-  const [confirmVisible,  setConfirmVisible]  = useState(false);
+  const [confirmVisible, setConfirmVisible] = useState(false);
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
-  const [eliminando,      setEliminando]      = useState(false);
+  const [eliminando, setEliminando] = useState(false);
 
   const esDocente = user?.roles?.some(
     r => (typeof r === 'string' ? r : r.nombre)?.toLowerCase() === 'docente'
@@ -110,10 +110,16 @@ const UsuariosScreen = () => {
       const data = esDocente
         ? await usuarioService.listarEstudiantes()
         : await usuarioService.listar();
-      setUsuarios(data);
-      aplicarFiltro(busqueda, data);
+
+      // Asegurar que data sea un array
+      const usuariosArray = Array.isArray(data) ? data : [];
+
+      console.log('Usuarios cargados:', usuariosArray);
+      setUsuarios(usuariosArray);
+      aplicarFiltro(busqueda, usuariosArray);
     } catch (error) {
       console.error('Error cargando usuarios:', error);
+      setUsuarios([]);
     } finally {
       setLoading(false);
     }
@@ -129,9 +135,10 @@ const UsuariosScreen = () => {
 
   // ─── Búsqueda ────────────────────────────────────────────────────────────────
   const aplicarFiltro = (texto, base = usuarios) => {
-    if (!texto.trim()) { setFiltrados(base); return; }
+    const baseArray = Array.isArray(base) ? base : [];
+    if (!texto.trim()) { setFiltrados(baseArray); return; }
     const lower = texto.toLowerCase();
-    setFiltrados(base.filter(u =>
+    setFiltrados(baseArray.filter(u =>
       u.nombre?.toLowerCase().includes(lower) ||
       u.apellido?.toLowerCase().includes(lower) ||
       u.email?.toLowerCase().includes(lower) ||
@@ -178,10 +185,13 @@ const UsuariosScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
+        </TouchableOpacity>
         <View style={styles.headerTitle}>
           <Text style={styles.headerText}>{esDocente ? 'Estudiantes' : 'Usuarios'}</Text>
           <Text style={styles.headerSubtext}>
-            {filtrados.length} {esDocente ? 'estudiantes' : 'usuarios'}
+            {(Array.isArray(filtrados) ? filtrados.length : 0)} {esDocente ? 'estudiantes' : 'usuarios'}
           </Text>
         </View>
         {!esDocente && (
@@ -223,7 +233,7 @@ const UsuariosScreen = () => {
           </View>
         )}
 
-        {filtrados.length === 0 ? (
+        {!Array.isArray(filtrados) || filtrados.length === 0 ? (
           <EmptyState
             icon="people-outline"
             title={busqueda ? 'Sin resultados' : `No hay ${esDocente ? 'estudiantes' : 'usuarios'}`}
@@ -233,7 +243,7 @@ const UsuariosScreen = () => {
           />
         ) : (
           <View style={styles.list}>
-            {filtrados.map(u => (
+            {(Array.isArray(filtrados) ? filtrados : []).map(u => (
               <UsuarioCard
                 key={u.id}
                 usuario={u}
@@ -272,7 +282,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.gray[200],
   },
   headerTitle: { flex: 1 },
-  headerText:    { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
+  headerText: { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
   headerSubtext: { fontSize: fontSize.sm, color: colors.gray[600], marginTop: spacing.xs },
   addButton: {
     width: 40, height: 40, backgroundColor: colors.primary[600],
@@ -296,21 +306,21 @@ const styles = StyleSheet.create({
   docenteHintText: { fontSize: fontSize.xs, color: colors.primary[700], flex: 1 },
 
   content: { flex: 1 },
-  list:    { padding: spacing.lg },
-  card:    { marginBottom: spacing.md },
+  list: { padding: spacing.lg },
+  card: { marginBottom: spacing.md },
   cardRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
 
   avatar: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
   avatarText: { fontSize: fontSize.base, fontWeight: 'bold', color: colors.white },
 
-  cardInfo:   { flex: 1 },
+  cardInfo: { flex: 1 },
   cardNombre: { fontSize: fontSize.base, fontWeight: '600', color: colors.gray[900] },
-  cardEmail:  { fontSize: fontSize.sm,   color: colors.gray[500], marginTop: 2 },
-  cardMeta:   { marginTop: spacing.xs, gap: spacing.xs },
-  cardDoc:    { fontSize: fontSize.xs, color: colors.gray[500] },
+  cardEmail: { fontSize: fontSize.sm, color: colors.gray[500], marginTop: 2 },
+  cardMeta: { marginTop: spacing.xs, gap: spacing.xs },
+  cardDoc: { fontSize: fontSize.xs, color: colors.gray[500] },
 
   rolesTags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: 2 },
-  rolTag:    { paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: borderRadius.sm },
+  rolTag: { paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: borderRadius.sm },
   rolTagText: { fontSize: fontSize.xs, fontWeight: '600' },
 
   cardActions: { flexDirection: 'row', gap: spacing.xs },

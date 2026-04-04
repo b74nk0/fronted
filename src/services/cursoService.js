@@ -3,11 +3,21 @@ import { api } from './api';
 export const cursoService = {
   listar: async () => {
     const response = await api.get('/cursos');
-    return response.data;
+    // El backend retorna un Page<CursoDto>, extraemos el contenido
+    const data = response.data;
+    if (data && Array.isArray(data.content)) {
+      return data.content;
+    }
+    return Array.isArray(data) ? data : [];
   },
   listarPorGrado: async (gradoId) => {
     const response = await api.get(`/cursos/grado/${gradoId}`);
-    return response.data;
+    // El backend puede retornar un Page<CursoDto> o un List<CursoDto>
+    const data = response.data;
+    if (data && Array.isArray(data.content)) {
+      return data.content;
+    }
+    return Array.isArray(data) ? data : [];
   },
   obtener: async (id) => {
     const response = await api.get(`/cursos/${id}`);

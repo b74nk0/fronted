@@ -1,6 +1,10 @@
 import { api } from './api';
 
 export const estudianteCursoService = {
+  listarPorCurso: async (cursoId) => {
+    const response = await api.get(`/estudiante-curso/curso/${cursoId}`);
+    return response.data;
+  },
   listarPorCursoYPeriodo: async (cursoId, periodoId) => {
     const response = await api.get(`/estudiante-curso/curso/${cursoId}/periodo/${periodoId}`);
     return response.data;

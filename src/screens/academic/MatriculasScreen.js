@@ -16,6 +16,7 @@ import { nivelService } from '../../services/nivelService';
 import { periodoAcademicoService } from '../../services/periodoAcademicoService';
 import { cursoService } from '../../services/cursoService';
 import { estudianteCursoService } from '../../services/estudianteCursoService';
+import GestionAcademicaScreen from './GestionAcademicaScreen';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const ESTADOS = ['Prematriculado', 'Matriculado', 'Retirado', 'Cancelado'];
@@ -25,6 +26,89 @@ const ESTADO_COLORS = {
   Retirado:       { bg: '#fee2e2', text: '#991b1b' },
   Cancelado:      { bg: '#f3f4f6', text: '#6b7280' },
 };
+
+// ─── Dropdown selector reutilizable ───────────────────────────────────────────
+const DropdownSelector = ({ label, placeholder, value, options, onSelect, error, disabled }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={ddStyles.container}>
+      {label && <Text style={ddStyles.label}>{label}</Text>}
+      <TouchableOpacity
+        style={[ddStyles.trigger,
+          open && ddStyles.triggerOpen,
+          error && ddStyles.triggerError,
+          disabled && ddStyles.triggerDisabled]}
+        onPress={() => !disabled && setOpen(!open)}
+        activeOpacity={disabled ? 1 : 0.7}
+      >
+        <Text style={[ddStyles.triggerText, !value && ddStyles.placeholder]}>
+          {value ? value.nombre : placeholder}
+        </Text>
+        <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18}
+          color={disabled ? colors.gray[300] : colors.gray[500]} />
+      </TouchableOpacity>
+      {error && <Text style={ddStyles.errorText}>{error}</Text>}
+      {open && (
+        <View style={ddStyles.dropdown}>
+          <ScrollView
+            style={{ maxHeight: 220 }}
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={true}
+          >
+            {options.length === 0 ? (
+              <Text style={ddStyles.emptyText}>Sin opciones disponibles</Text>
+            ) : (
+              options.map(opt => (
+                <TouchableOpacity key={opt.id}
+                  style={[ddStyles.option, value?.id === opt.id && ddStyles.optionSelected]}
+                  onPress={() => { onSelect(opt); setOpen(false); }}>
+                  <Text style={[ddStyles.optionText, value?.id === opt.id && ddStyles.optionTextSelected]}>
+                    {opt.nombre}{opt.nivelNombre ? ` (${opt.nivelNombre})` : ''}
+                  </Text>
+                  {value?.id === opt.id && (
+                    <Ionicons name="checkmark" size={16} color={colors.primary[600]} />
+                  )}
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const ddStyles = StyleSheet.create({
+  container:       { marginBottom: spacing.md },
+  label:           { fontSize: fontSize.sm, fontWeight: '600', color: colors.gray[700], marginBottom: spacing.xs },
+  trigger: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderWidth: 1, borderColor: colors.gray[300], borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2,
+    backgroundColor: colors.white, minHeight: 44,
+  },
+  triggerOpen:     { borderColor: colors.primary[400], borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
+  triggerError:    { borderColor: colors.red[500] },
+  triggerDisabled: { backgroundColor: colors.gray[50], borderColor: colors.gray[100] },
+  triggerText:     { fontSize: fontSize.base, color: colors.gray[900], flex: 1 },
+  placeholder:     { color: colors.gray[400] },
+  errorText:       { fontSize: fontSize.xs, color: colors.red[500], marginTop: spacing.xs },
+  dropdown: {
+    borderWidth: 1, borderTopWidth: 0, borderColor: colors.primary[200],
+    borderBottomLeftRadius: borderRadius.md, borderBottomRightRadius: borderRadius.md,
+    backgroundColor: colors.white, marginBottom: spacing.xs,
+  },
+  option: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2,
+    borderBottomWidth: 1, borderBottomColor: colors.gray[50],
+  },
+  optionSelected:     { backgroundColor: colors.primary[50] },
+  optionText:         { fontSize: fontSize.sm, color: colors.gray[800] },
+  optionTextSelected: { color: colors.primary[700], fontWeight: '600' },
+  emptyText:          { padding: spacing.md, color: colors.gray[400], fontSize: fontSize.sm, textAlign: 'center' },
+});
 
 // ─── Tarjeta de matrícula ─────────────────────────────────────────────────────
 const MatriculaCard = ({ matricula, asignacionCurso, periodoActivo, onEditMatricula, onDeleteMatricula, onAsignarCurso, onRemoverCurso }) => {
@@ -321,7 +405,8 @@ const MatriculasScreen = () => {
     // Cargar cursos del grado de la matrícula
     try {
       const cursos = await cursoService.listarPorGrado(matricula.grado?.id);
-      setCursosDelGrado(cursos.filter(c => c.activo !== false));
+      const cursosArray = Array.isArray(cursos) ? cursos : [];
+      setCursosDelGrado(cursosArray.filter(c => c.activo !== false));
     } catch (e) {
       console.error('Error cargando cursos:', e);
       setCursosDelGrado([]);
@@ -447,20 +532,15 @@ const MatriculasScreen = () => {
             </ScrollView>
             {crearErrors.periodo && <Text style={styles.errorText}>{crearErrors.periodo}</Text>}
 
-            {/* Grado */}
-            <Text style={styles.fieldLabel}>Grado *</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-              {gradosFlat.map(g => (
-                <TouchableOpacity key={g.id}
-                  style={[styles.chip, gradoSeleccionado?.id === g.id && styles.chipSelected]}
-                  onPress={() => setGradoSeleccionado(g)}>
-                  <Text style={[styles.chipText, gradoSeleccionado?.id === g.id && styles.chipTextSelected]}>
-                    {g.nombre}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            {crearErrors.grado && <Text style={styles.errorText}>{crearErrors.grado}</Text>}
+            {/* Grado - Dropdown */}
+            <DropdownSelector
+              label="Grado *"
+              placeholder="Selecciona un grado"
+              value={gradoSeleccionado}
+              options={gradosFlat}
+              onSelect={(g) => setGradoSeleccionado(g)}
+              error={crearErrors.grado}
+            />
             {crearErrors.general && <Text style={styles.errorText}>{crearErrors.general}</Text>}
 
             <View style={{ height: spacing.md }} />
@@ -650,7 +730,7 @@ const MatriculasScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('GestionAcademica')}>
           <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
         </TouchableOpacity>
         <View style={styles.headerTitle}>

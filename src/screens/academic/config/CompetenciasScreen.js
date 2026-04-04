@@ -122,7 +122,7 @@ const CompetenciasScreen = () => {
   const [editingComp,  setEditingComp]  = useState(null);
   const [formData,     setFormData]     = useState(FORM_INITIAL);
   const [errors,       setErrors]       = useState({});
-  const [filtroMateria, setFiltroMateria] = useState(null);
+  const [filtroGrado, setFiltroGrado] = useState(null);
 
   // Confirm desactivar
   const [confirmVisible,  setConfirmVisible]  = useState(false);
@@ -182,14 +182,14 @@ const CompetenciasScreen = () => {
     (n.grados || []).map(g => ({ ...g, nivelNombre: n.nombre }))
   );
 
-  // ─── Agrupadas por materia ───────────────────────────────────────────────────
-  const competenciasFiltradas = filtroMateria
-    ? competencias.filter(c => c.materia?.id === filtroMateria.id)
+  // ─── Agrupadas por grado ───────────────────────────────────────────────────
+  const competenciasFiltradas = filtroGrado
+    ? competencias.filter(c => c.grado?.id === filtroGrado.id)
     : competencias;
 
-  const agrupadasPorMateria = competenciasFiltradas.reduce((acc, c) => {
-    const key   = c.materia?.id || 'sin-materia';
-    const label = c.materia?.nombre || 'Sin materia';
+  const agrupadasPorGrado = competenciasFiltradas.reduce((acc, c) => {
+    const key   = c.grado?.id || 'sin-grado';
+    const label = c.grado?.nombre || 'Sin grado';
     if (!acc[key]) acc[key] = { label, items: [] };
     acc[key].items.push(c);
     return acc;
@@ -294,11 +294,11 @@ const CompetenciasScreen = () => {
   };
 
   // ─── Render grupo ─────────────────────────────────────────────────────────────
-  const renderGrupo = (materiaId, grupo) => (
-    <Card key={materiaId} style={styles.grupoCard}>
+  const renderGrupo = (gradoId, grupo) => (
+    <Card key={gradoId} style={styles.grupoCard}>
       <View style={styles.grupoHeader}>
         <View style={styles.grupoIconContainer}>
-          <Ionicons name="book" size={18} color={colors.primary[600]} />
+          <Ionicons name="school" size={18} color={colors.primary[600]} />
         </View>
         <Text style={styles.grupoTitle}>{grupo.label}</Text>
         <Text style={styles.grupoCount}>{grupo.items.length} competencias</Text>
@@ -316,7 +316,7 @@ const CompetenciasScreen = () => {
             {comp.descripcion ? (
               <Text style={styles.compDesc} numberOfLines={2}>{comp.descripcion}</Text>
             ) : null}
-            <Text style={styles.compGrado}>Grado: {comp.grado?.nombre || '—'}</Text>
+            <Text style={styles.compMateria}>Materia: {comp.materia?.nombre || '—'}</Text>
           </View>
           <View style={styles.compActions}>
             <TouchableOpacity style={styles.iconButton} onPress={() => openModal(comp)}>
@@ -424,7 +424,7 @@ const CompetenciasScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('GestionAcademica')}>
           <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
         </TouchableOpacity>
         <View style={styles.headerTitle}>
@@ -436,27 +436,23 @@ const CompetenciasScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Filtro por materia */}
-      {materias.length > 0 && (
+      {/* Filtro por grado - Dropdown */}
+      {gradosFlat.length > 0 && (
         <View style={styles.filtroContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <DropdownSelector
+            label="Filtrar por grado"
+            placeholder="Todos los grados"
+            value={filtroGrado}
+            options={gradosFlat}
+            onSelect={(g) => setFiltroGrado(g || null)}
+          />
+          {filtroGrado && (
             <TouchableOpacity
-              style={[styles.filtroChip, !filtroMateria && styles.filtroChipActive]}
-              onPress={() => setFiltroMateria(null)}>
-              <Text style={[styles.filtroChipText, !filtroMateria && styles.filtroChipTextActive]}>
-                Todas
-              </Text>
+              style={styles.limpiarFiltro}
+              onPress={() => setFiltroGrado(null)}>
+              <Text style={styles.limpiarFiltroText}>Limpiar filtro</Text>
             </TouchableOpacity>
-            {materias.map(m => (
-              <TouchableOpacity key={m.id}
-                style={[styles.filtroChip, filtroMateria?.id === m.id && styles.filtroChipActive]}
-                onPress={() => setFiltroMateria(filtroMateria?.id === m.id ? null : m)}>
-                <Text style={[styles.filtroChipText, filtroMateria?.id === m.id && styles.filtroChipTextActive]}>
-                  {m.nombre}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          )}
         </View>
       )}
 
@@ -469,12 +465,12 @@ const CompetenciasScreen = () => {
           </Text>
         </View>
 
-        {Object.keys(agrupadasPorMateria).length === 0 ? (
+        {Object.keys(agrupadasPorGrado).length === 0 ? (
           <EmptyState icon="ribbon-outline" title="No hay competencias"
             message="Crea las competencias que los docentes calificarán por materia y grado" />
         ) : (
           <View style={styles.list}>
-            {Object.entries(agrupadasPorMateria).map(([id, grupo]) => renderGrupo(id, grupo))}
+            {Object.entries(agrupadasPorGrado).map(([id, grupo]) => renderGrupo(id, grupo))}
           </View>
         )}
         <View style={{ height: spacing.xl }} />
@@ -516,16 +512,15 @@ const styles = StyleSheet.create({
 
   filtroContainer: {
     backgroundColor: colors.white, paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.gray[100],
+    paddingTop: spacing.md, paddingBottom: spacing.sm,
+    borderBottomWidth: 1, borderBottomColor: colors.gray[100],
   },
-  filtroChip: {
-    paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2,
-    borderRadius: borderRadius.full, borderWidth: 1, borderColor: colors.gray[200],
-    backgroundColor: colors.white, marginRight: spacing.sm,
+  limpiarFiltro: {
+    alignSelf: 'flex-end', marginTop: spacing.xs, marginBottom: spacing.xs,
   },
-  filtroChipActive:     { backgroundColor: colors.primary[600], borderColor: colors.primary[600] },
-  filtroChipText:       { fontSize: fontSize.sm, color: colors.gray[600], fontWeight: '500' },
-  filtroChipTextActive: { color: colors.white },
+  limpiarFiltroText: {
+    fontSize: fontSize.sm, color: colors.primary[600], fontWeight: '500',
+  },
 
   content: { flex: 1 },
   infoBox: {
@@ -559,8 +554,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2, borderRadius: borderRadius.sm,
   },
   porcentajeText: { fontSize: fontSize.xs, fontWeight: '700', color: colors.primary[700] },
-  compDesc:  { fontSize: fontSize.xs, color: colors.gray[500], lineHeight: 16, marginBottom: 2 },
-  compGrado: { fontSize: fontSize.xs, color: colors.gray[400] },
+  compDesc:   { fontSize: fontSize.xs, color: colors.gray[500], lineHeight: 16, marginBottom: 2 },
+  compMateria: { fontSize: fontSize.xs, color: colors.gray[400] },
   compActions: { flexDirection: 'row', gap: spacing.xs },
   iconButton: {
     width: 30, height: 30, justifyContent: 'center', alignItems: 'center',
