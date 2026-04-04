@@ -37,10 +37,18 @@ import AsistenciaScreen from '../screens/academic/AsistenciaScreen';
 //Screens - Docente
 import PerfilEstudianteScreen from '../screens/academic/PerfilEstudianteScreen';
 import MiAsistenciaScreen from '../screens/dashboard/MiAsistenciaScreen';
+import NotasDocenteScreen from '../screens/academic/NotasDocenteScreen';
+
+// Screens - Estudiante
+import MisNotasScreen from '../screens/academic/MisNotasScreen';
+
+// Screens - Admin Reportes
+import ReporteNotasAdminScreen from '../screens/academic/ReporteNotasAdminScreen';
 
 // Screens - Finance
 import PensionesScreen from '../screens/finance/PensionesScreen';
 import MisPensionesScreen from '../screens/finance/MisPensionesScreen';
+import ReportePagosScreen from '../screens/finance/ReportePagosScreen';
 
 // Screens - Compartidas (todos los roles)
 import MiPerfilScreen from '../screens/profile/MiPerfilScreen';
@@ -102,6 +110,9 @@ const MainNavigator = () => {
           <Drawer.Screen name="Pensiones" component={PensionesScreen}
             options={{ title: 'Pensiones', drawerIcon: ({ color, size }) => <Ionicons name="cash" size={size} color={color} /> }} />
 
+          <Drawer.Screen name="ReportePagos" component={ReportePagosScreen}
+            options={{ title: 'Reporte de Pagos', drawerIcon: ({ color, size }) => <Ionicons name="receipt" size={size} color={color} /> }} />
+
           <Drawer.Screen name="AdministracionEscolar" component={AdministracionEscolarScreen}
             options={{ title: 'Administración Escolar', drawerIcon: ({ color, size }) => <Ionicons name="briefcase" size={size} color={color} /> }} />
 
@@ -145,6 +156,8 @@ const MainNavigator = () => {
             options={{ drawerItemStyle: { display: 'none' }, title: 'Tipos de Documento' }} />
           <Drawer.Screen name="ConfigGeneral" component={ConfigGeneralScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Configuración General' }} />
+          <Drawer.Screen name="ReporteNotas" component={ReporteNotasAdminScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Reporte de Notas' }} />
         </>
       )}
 
@@ -159,6 +172,8 @@ const MainNavigator = () => {
             options={{ title: 'Documentación', drawerIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} /> }} />
           <Drawer.Screen name="PerfilEstudiante" component={PerfilEstudianteScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Perfil Estudiante' }} />
+          <Drawer.Screen name="NotasDocente" component={NotasDocenteScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Gestión de Notas' }} />
         </>
       )}
 
@@ -171,6 +186,8 @@ const MainNavigator = () => {
             options={{ title: 'Certificados', drawerIcon: ({ color, size }) => <Ionicons name="ribbon" size={size} color={color} /> }} />
           <Drawer.Screen name="Docentes" component={DocentesScreen}
             options={{ title: 'Docentes', drawerIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} /> }} />
+          <Drawer.Screen name="MisNotas" component={MisNotasScreen}
+            options={{ title: 'Mis Notas', drawerIcon: ({ color, size }) => <Ionicons name="stats-chart" size={size} color={color} /> }} />
         </>
       )}
 

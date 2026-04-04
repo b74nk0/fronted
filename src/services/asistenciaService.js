@@ -34,6 +34,14 @@ export const asistenciaService = {
   },
 
   /**
+   * Obtener asistencias por asignación docente y fecha
+   */
+  obtenerPorAsignacionYFecha: async (asignacionId, fecha) => {
+    const response = await api.get(`/asistencias/asignacion/${asignacionId}?fecha=${fecha}`);
+    return response.data;
+  },
+
+  /**
    * Obtener resumen estadístico de asistencias
    */
   obtenerResumenPorCursoYFecha: async (cursoId, fecha) => {

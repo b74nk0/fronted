@@ -58,6 +58,13 @@ const DashboardScreen = () => {
       description: 'Pensiones y pagos',
     },
     {
+      title: 'Reporte Pagos',
+      icon: 'receipt',
+      color: '#0891b2',
+      screen: 'ReportePagos',
+      description: 'Reportes de pagos realizados',
+    },
+    {
       title: 'Administración',
       icon: 'briefcase',
       color: '#dc2626',
@@ -82,18 +89,11 @@ const DashboardScreen = () => {
       description: 'Ver y gestionar mis cursos',
     },
     {
-      title: 'Estudiantes',
-      icon: 'people',
-      color: '#0891b2',
-      screen: 'Usuarios',
-      description: 'Ver listado de estudiantes',
-    },
-    {
-      title: 'Evaluaciones',
+      title: 'Notas',
       icon: 'clipboard',
       color: '#9333ea',
-      screen: 'GestionAcademicaDocente',
-      description: 'Crear y calificar evaluaciones',
+      screen: 'NotasDocente',
+      description: 'Gestionar notas y evaluaciones',
     },
     {
       title: 'Asistencia',
@@ -101,6 +101,13 @@ const DashboardScreen = () => {
       color: '#16a34a',
       screen: 'MiAsistencia',
       description: 'Tomar asistencia',
+    },
+    {
+      title: 'Estudiantes',
+      icon: 'people',
+      color: '#0891b2',
+      screen: 'Usuarios',
+      description: 'Ver listado de estudiantes',
     },
     {
       title: 'Documentos',
@@ -114,9 +121,9 @@ const DashboardScreen = () => {
   const estudianteCards = [
     {
       title: 'Mis Notas',
-      icon: 'star',
+      icon: 'stats-chart',
       color: colors.primary[600],
-      screen: 'FinanzasEstudiante',
+      screen: 'MisNotas',
       description: 'Ver mis calificaciones',
     },
     {

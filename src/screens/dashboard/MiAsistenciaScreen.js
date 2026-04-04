@@ -136,7 +136,7 @@ const MiAsistenciaScreen = () => {
   };
 
   const handleGuardarAsistencia = async () => {
-    if (!cursoSeleccionado || estudiantes.length === 0) return;
+    if (!asignacionSeleccionada || estudiantes.length === 0) return;
 
     setGuardando(true);
     try {
@@ -147,7 +147,8 @@ const MiAsistenciaScreen = () => {
       }));
 
       await asistenciaService.registrarLista({
-        cursoId: cursoSeleccionado.id,
+        cursoId: asignacionSeleccionada.curso.id,
+        asignacionDocenteId: asignacionSeleccionada.asignacion.id,
         fecha: fechaSeleccionada,
         asistencias: listaAsistencias,
       });
@@ -176,8 +177,8 @@ const MiAsistenciaScreen = () => {
 
   const resumen = obtenerResumen();
 
-  // Si no hay curso seleccionado, mostrar selector de cursos
-  if (!cursoSeleccionado) {
+  // Si no hay asignación seleccionada, mostrar selector de cursos con materias
+  if (!asignacionSeleccionada) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
@@ -186,14 +187,14 @@ const MiAsistenciaScreen = () => {
           </TouchableOpacity>
           <View style={styles.headerTitle}>
             <Text style={styles.headerText}>Mi Asistencia</Text>
-            <Text style={styles.headerSubtext}>Selecciona un curso</Text>
+            <Text style={styles.headerSubtext}>Selecciona un curso y materia</Text>
           </View>
         </View>
 
         <ScrollView style={styles.content}>
-          {loadingCursos ? (
+          {loadingAsignaciones ? (
             <ActivityIndicator size="large" color={colors.primary[600]} style={{ marginTop: spacing.xl }} />
-          ) : cursos.length === 0 ? (
+          ) : asignaciones.length === 0 ? (
             <EmptyState
               icon="school-outline"
               title="Sin cursos asignados"
@@ -201,22 +202,25 @@ const MiAsistenciaScreen = () => {
             />
           ) : (
             <View style={styles.cursosList}>
-              <Text style={styles.sectionTitle}>Mis cursos ({cursos.length})</Text>
-              {cursos.map(curso => (
-                <TouchableOpacity
-                  key={curso.id}
-                  style={styles.cursoCard}
-                  onPress={() => setCursoSeleccionado(curso)}
-                >
-                  <View style={styles.cursoIcon}>
-                    <Ionicons name="people" size={24} color={colors.primary[600]} />
-                  </View>
-                  <View style={styles.cursoInfo}>
-                    <Text style={styles.cursoNombre}>{curso.nombre}</Text>
-                    <Text style={styles.cursoGrado}>{curso.gradoNombre}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.gray[400]} />
-                </TouchableOpacity>
+              {asignaciones.map(({ curso, asignaciones: asignaturas }) => (
+                <View key={curso.id} style={styles.cursoGrupo}>
+                  <Text style={styles.cursoGrupoTitulo}>{curso.nombre} - {curso.gradoNombre}</Text>
+                  {asignaturas.map(asig => (
+                    <TouchableOpacity
+                      key={asig.id}
+                      style={styles.asignaturaCard}
+                      onPress={() => setAsignacionSeleccionada({ curso, asignacion: asig })}
+                    >
+                      <View style={styles.asignaturaIcon}>
+                        <Ionicons name="book-outline" size={24} color={colors.primary[600]} />
+                      </View>
+                      <View style={styles.asignaturaInfo}>
+                        <Text style={styles.asignaturaNombre}>{asig.materia.nombre}</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={colors.gray[400]} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
               ))}
             </View>
           )}
@@ -229,12 +233,14 @@ const MiAsistenciaScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => setCursoSeleccionado(null)}>
+        <TouchableOpacity style={styles.backButton} onPress={() => setAsignacionSeleccionada(null)}>
           <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
         </TouchableOpacity>
         <View style={styles.headerTitle}>
-          <Text style={styles.headerText}>{cursoSeleccionado.nombre}</Text>
-          <Text style={styles.headerSubtext}>Registro de asistencia</Text>
+          <Text style={styles.headerText}>{asignacionSeleccionada.curso.nombre}</Text>
+          <Text style={styles.headerSubtext}>
+            {asignacionSeleccionada.asignacion.materia.nombre}
+          </Text>
         </View>
       </View>
 
@@ -373,6 +379,24 @@ const styles = StyleSheet.create({
   headerSubtext: { fontSize: fontSize.sm, color: colors.gray[600], marginTop: spacing.xs },
   content: { flex: 1, padding: spacing.lg },
   cursosList: { padding: spacing.lg },
+  cursoGrupo: { marginBottom: spacing.lg },
+  cursoGrupoTitulo: {
+    fontSize: fontSize.base, fontWeight: '700', color: colors.gray[800],
+    marginBottom: spacing.sm,
+  },
+  asignaturaCard: {
+    backgroundColor: colors.white, borderRadius: borderRadius.lg,
+    padding: spacing.md, flexDirection: 'row', alignItems: 'center',
+    marginBottom: spacing.sm, shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08, shadowRadius: 3, elevation: 2,
+  },
+  asignaturaIcon: {
+    width: 48, height: 48, borderRadius: borderRadius.lg,
+    backgroundColor: colors.primary[50], justifyContent: 'center', alignItems: 'center',
+  },
+  asignaturaInfo: { flex: 1, marginLeft: spacing.md },
+  asignaturaNombre: { fontSize: fontSize.base, fontWeight: '600', color: colors.gray[900] },
   sectionTitle: {
     fontSize: fontSize.lg, fontWeight: '600', color: colors.gray[900],
     marginBottom: spacing.md,
