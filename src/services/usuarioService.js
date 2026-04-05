@@ -1,14 +1,19 @@
 import { api } from './api';
 
 export const usuarioService = {
-  listar: async () => {
-    const response = await api.get('/usuarios');
+  listar: async (pagina = 0, tamaño = 100) => {
+    const response = await api.get(`/usuarios?pagina=${pagina}&tamaño=${tamaño}`);
     // El backend retorna un Page<UsuarioDto>, extraemos el contenido
     const data = response.data;
     if (data && Array.isArray(data.content)) {
       return data.content;
     }
     return Array.isArray(data) ? data : [];
+  },
+
+  listarTodos: async () => {
+    // Obtener todos los usuarios con un tamaño grande
+    return usuarioService.listar(0, 1000);
   },
 
   listarEstudiantes: async () => {
