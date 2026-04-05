@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  RefreshControl,
+  RefreshControl, TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,7 +9,8 @@ import Card from '../../components/common/Card';
 import EmptyState from '../../components/common/EmptyState';
 import { colors, spacing, fontSize, borderRadius } from '../../constants/theme';
 import { notaService } from '../../services/notaService';
-import { periodoAcademicoService } from '../../services/periodoAcademicoService';
+import { periodoService } from '../../services/periodoService';
+import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 
 const MisNotasScreen = () => {
@@ -19,20 +20,38 @@ const MisNotasScreen = () => {
   const [notas, setNotas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [estudianteId, setEstudianteId] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
       loadPeriodos();
+      loadUserProfile();
     }, [])
   );
 
+  const loadUserProfile = async () => {
+    // Si ya tenemos el ID en el user, usarlo
+    if (user?.id) {
+      setEstudianteId(user.id);
+      return;
+    }
+
+    // Si no, obtenerlo del backend
+    try {
+      const profile = await authService.getProfile();
+      setEstudianteId(profile.id);
+      console.log('Perfil obtenido:', profile);
+    } catch (e) {
+      console.error('Error obteniendo perfil:', e);
+    }
+  };
+
   const loadPeriodos = async () => {
     try {
-      const data = await periodoAcademicoService.listar();
-      const periodosActivos = Array.isArray(data) ? data.filter(p => p.activo) : [];
-      setPeriodos(periodosActivos);
-      if (periodosActivos.length > 0 && !periodoSeleccionado) {
-        setPeriodoSeleccionado(periodosActivos[0]);
+      const data = await periodoService.listarActivos();
+      setPeriodos(data);
+      if (data.length > 0 && !periodoSeleccionado) {
+        setPeriodoSeleccionado(data[0]);
       }
     } catch (e) {
       console.error('Error cargando períodos:', e);
@@ -40,11 +59,16 @@ const MisNotasScreen = () => {
   };
 
   const cargarNotas = async () => {
-    if (!periodoSeleccionado || !user?.id) return;
+    if (!periodoSeleccionado || !estudianteId) {
+      console.log('No hay período o usuario seleccionado', { periodoSeleccionado, estudianteId });
+      return;
+    }
 
     setLoading(true);
     try {
-      const data = await notaService.obtenerPorEstudianteYPeriodo(user.id, periodoSeleccionado.id);
+      console.log('Cargando notas para estudiante:', estudianteId, 'período:', periodoSeleccionado.id);
+      const data = await notaService.obtenerPorEstudianteYPeriodo(estudianteId, periodoSeleccionado.id);
+      console.log('Notas recibidas:', data);
       setNotas(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error('Error cargando notas:', e);
@@ -54,10 +78,10 @@ const MisNotasScreen = () => {
   };
 
   React.useEffect(() => {
-    if (periodoSeleccionado) {
+    if (periodoSeleccionado && estudianteId) {
       cargarNotas();
     }
-  }, [periodoSeleccionado]);
+  }, [periodoSeleccionado, estudianteId]);
 
   const onRefresh = () => {
     setRefreshing(true);

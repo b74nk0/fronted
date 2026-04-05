@@ -12,6 +12,7 @@ import { colors, spacing, fontSize, borderRadius } from '../../constants/theme';
 import { asignacionDocenteService } from '../../services/asignacionDocenteService';
 import { estudianteCursoService } from '../../services/estudianteCursoService';
 import { notaService } from '../../services/notaService';
+import { periodoService } from '../../services/periodoService';
 import { periodoAcademicoService } from '../../services/periodoAcademicoService';
 
 const TIPOS_EVALUACION = [
@@ -29,6 +30,8 @@ const TIPOS_EVALUACION = [
 const NotasDocenteScreen = () => {
   const [asignaciones, setAsignaciones] = useState([]);
   const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null);
+  const [periodosAcademicos, setPeriodosAcademicos] = useState([]);
+  const [periodoAcademicoSeleccionado, setPeriodoAcademicoSeleccionado] = useState(null);
   const [periodos, setPeriodos] = useState([]);
   const [periodoSeleccionado, setPeriodoSeleccionado] = useState(null);
   const [estudiantes, setEstudiantes] = useState([]);
@@ -45,9 +48,16 @@ const NotasDocenteScreen = () => {
   useFocusEffect(
     useCallback(() => {
       loadAsignaciones();
-      loadPeriodos();
+      loadPeriodosAcademicos();
     }, [])
   );
+
+  // Cargar estudiantes cuando se selecciona una asignación
+  React.useEffect(() => {
+    if (asignacionSeleccionada && periodoAcademicoSeleccionado) {
+      cargarEstudiantesYNotas();
+    }
+  }, [asignacionSeleccionada, periodoAcademicoSeleccionado, periodoSeleccionado]);
 
   const loadAsignaciones = async () => {
     setLoading(true);
@@ -73,7 +83,7 @@ const NotasDocenteScreen = () => {
           id: asig.id,
           materia: { id: asig.materiaId, nombre: asig.materiaNombre },
           cursoId,
-          periodoId: asig.periodoId,
+          periodoAcademicoId: asig.periodoId,
         });
       });
 
@@ -85,13 +95,27 @@ const NotasDocenteScreen = () => {
     }
   };
 
-  const loadPeriodos = async () => {
+  const loadPeriodosAcademicos = async () => {
     try {
       const data = await periodoAcademicoService.listar();
       const periodosActivos = Array.isArray(data) ? data.filter(p => p.activo) : [];
-      setPeriodos(periodosActivos);
-      if (periodosActivos.length > 0 && !periodoSeleccionado) {
-        setPeriodoSeleccionado(periodosActivos[0]);
+      setPeriodosAcademicos(periodosActivos);
+      if (periodosActivos.length > 0 && !periodoAcademicoSeleccionado) {
+        setPeriodoAcademicoSeleccionado(periodosActivos[0]);
+        // Cargar períodos específicos de este año académico
+        loadPeriodos(periodosActivos[0].id);
+      }
+    } catch (e) {
+      console.error('Error cargando períodos académicos:', e);
+    }
+  };
+
+  const loadPeriodos = async (periodoAcademicoId) => {
+    try {
+      const data = await periodoService.listarPorPeriodoAcademico(periodoAcademicoId);
+      setPeriodos(data);
+      if (data.length > 0 && !periodoSeleccionado) {
+        setPeriodoSeleccionado(data[0]);
       }
     } catch (e) {
       console.error('Error cargando períodos:', e);
@@ -99,24 +123,28 @@ const NotasDocenteScreen = () => {
   };
 
   const cargarEstudiantesYNotas = async () => {
-    if (!asignacionSeleccionada || !periodoSeleccionado) return;
+    if (!asignacionSeleccionada || !periodoAcademicoSeleccionado) return;
 
     setLoading(true);
     try {
-      // Cargar estudiantes
+      // Cargar estudiantes usando el período académico (año)
       const estudiantesData = await estudianteCursoService.listarPorCursoYPeriodo(
         asignacionSeleccionada.curso.id,
-        periodoSeleccionado.id
+        periodoAcademicoSeleccionado.id
       );
       const estudiantesArray = Array.isArray(estudiantesData) ? estudiantesData : [];
       setEstudiantes(estudiantesArray);
 
-      // Cargar notas existentes
-      const notasData = await notaService.obtenerPorAsignacionYPeriodo(
-        asignacionSeleccionada.asignacion.id,
-        periodoSeleccionado.id
-      );
-      setNotas(Array.isArray(notasData) ? notasData : []);
+      // Cargar notas existentes usando el período específico
+      if (periodoSeleccionado) {
+        const notasData = await notaService.obtenerPorAsignacionYPeriodo(
+          asignacionSeleccionada.asignacion.id,
+          periodoSeleccionado.id
+        );
+        setNotas(Array.isArray(notasData) ? notasData : []);
+      } else {
+        setNotas([]);
+      }
     } catch (e) {
       console.error('Error cargando datos:', e);
       Alert.alert('Error', 'No se pudieron cargar los datos');
@@ -182,7 +210,12 @@ const NotasDocenteScreen = () => {
   };
 
   const abrirModalNuevaEvaluacion = () => {
-    setEvaluacionActual(null);
+    // Inicializar evaluacionActual con un objeto vacío para almacenar las notas
+    const notasIniciales = {};
+    estudiantes.forEach(est => {
+      notasIniciales[est.id] = '';
+    });
+    setEvaluacionActual({ notas: notasIniciales });
     setNombreEvaluacion('');
     setTipoEvaluacion('PARCIAL');
     setPeso('100');
@@ -266,7 +299,34 @@ const NotasDocenteScreen = () => {
         </View>
       </View>
 
-      {/* Selector de Período */}
+      {/* Selector de Año Académico */}
+      <View style={styles.periodoSelector}>
+        <Text style={styles.selectorLabel}>Año:</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {periodosAcademicos.map(pa => (
+            <TouchableOpacity
+              key={pa.id}
+              style={[
+                styles.periodoButton,
+                periodoAcademicoSeleccionado?.id === pa.id && styles.periodoButtonActive
+              ]}
+              onPress={() => {
+                setPeriodoAcademicoSeleccionado(pa);
+                loadPeriodos(pa.id);
+              }}
+            >
+              <Text style={[
+                styles.periodoButtonText,
+                periodoAcademicoSeleccionado?.id === pa.id && styles.periodoButtonTextActive
+              ]}>
+                {pa.nombre}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Selector de Período (Primer Periodo, Segundo Periodo, etc.) */}
       <View style={styles.periodoSelector}>
         <Text style={styles.selectorLabel}>Período:</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -294,8 +354,10 @@ const NotasDocenteScreen = () => {
       </View>
 
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
-        {!periodoSeleccionado ? (
-          <EmptyState icon="calendar-outline" title="Sin período" message="Selecciona un período académico" />
+        {!periodoAcademicoSeleccionado ? (
+          <EmptyState icon="calendar-outline" title="Sin año académico" message="Selecciona un año académico" />
+        ) : !periodoSeleccionado ? (
+          <EmptyState icon="calendar-outline" title="Sin período" message="Selecciona un período" />
         ) : estudiantes.length === 0 ? (
           <EmptyState icon="people-outline" title="Sin estudiantes" message="No hay estudiantes en este curso" />
         ) : (
@@ -441,6 +503,31 @@ const NotasDocenteScreen = () => {
                   {estudiantes.length} estudiantes a calificar
                 </Text>
               </View>
+
+              {/* Lista de estudiantes con inputs para notas */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Notas de estudiantes</Text>
+                {estudiantes.map(est => (
+                  <View key={est.id} style={styles.notaInputRow}>
+                    <Text style={styles.notaInputNombre} numberOfLines={1}>
+                      {est.estudiante?.nombre} {est.estudiante?.apellido}
+                    </Text>
+                    <TextInput
+                      style={styles.notaInput}
+                      placeholder="0.0"
+                      value={evaluacionActual?.notas?.[est.id] || ''}
+                      onChangeText={(val) => {
+                        setEvaluacionActual(prev => ({
+                          ...prev,
+                          notas: { ...prev?.notas, [est.id]: val }
+                        }));
+                      }}
+                      keyboardType="numeric"
+                      maxLength={4}
+                    />
+                  </View>
+                ))}
+              </View>
             </ScrollView>
 
             <View style={styles.modalFooter}>
@@ -576,6 +663,32 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md, alignItems: 'center',
   },
   previewTitle: { fontSize: fontSize.sm, color: colors.primary[700], fontWeight: '600' },
+
+  notaInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  notaInputNombre: {
+    flex: 1,
+    fontSize: fontSize.sm,
+    color: colors.gray[700],
+    marginRight: spacing.sm,
+  },
+  notaInput: {
+    width: 70,
+    height: 36,
+    borderWidth: 1,
+    borderColor: colors.gray[300],
+    borderRadius: borderRadius.md,
+    textAlign: 'center',
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    backgroundColor: colors.gray[50],
+  },
 
   modalFooter: {
     flexDirection: 'row', padding: spacing.lg,
