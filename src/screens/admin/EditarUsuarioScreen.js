@@ -209,7 +209,7 @@ const EditarUsuarioScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Usuarios')}>
           <Ionicons name="arrow-back" size={24} color={colors.gray[700]} />
         </TouchableOpacity>
         <View style={styles.headerTitle}>

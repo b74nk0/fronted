@@ -39,6 +39,14 @@ const ConfiguracionScreen = () => {
       screen: 'ConfigGrados',
     },
     {
+      id: 'certificados',
+      title: 'Certificados',
+      description: 'Plantillas de certificados',
+      icon: 'ribbon',
+      color: '#0d9488',
+      screen: 'ConfigCertificados',
+    },
+    {
       id: 'roles',
       title: 'Roles del Sistema',
       description: 'Gestionar permisos',

@@ -48,14 +48,14 @@ const MiPerfilScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
 
-  const [usuarioCompleto,  setUsuarioCompleto]  = useState(null);
+  const [usuarioCompleto, setUsuarioCompleto] = useState(null);
   const [datosAdicionales, setDatosAdicionales] = useState(null);
-  const [loading,          setLoading]          = useState(true);
+  const [loading, setLoading] = useState(true);
 
   // Modales independientes
   const [passwordModal, setPasswordModal] = useState(false);
-  const [familiaModal,  setFamiliaModal]  = useState(false);
-  const [saving,        setSaving]        = useState(false);
+  const [familiaModal, setFamiliaModal] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Form contraseña
   const [formPassword, setFormPassword] = useState({
@@ -96,8 +96,8 @@ const MiPerfilScreen = () => {
   // ─── Abrir modal familia ──────────────────────────────────────────────────────
   const openFamiliaModal = () => {
     setFormFamilia({
-      telefonoPadre:     datosAdicionales?.telefonoPadre     || '',
-      telefonoMadre:     datosAdicionales?.telefonoMadre     || '',
+      telefonoPadre: datosAdicionales?.telefonoPadre || '',
+      telefonoMadre: datosAdicionales?.telefonoMadre || '',
       telefonoAcudiente: datosAdicionales?.telefonoAcudiente || '',
     });
     setFamiliaModal(true);
@@ -106,7 +106,7 @@ const MiPerfilScreen = () => {
   // ─── Guardar contraseña ───────────────────────────────────────────────────────
   const handleSavePassword = async () => {
     const e = {};
-    if (!formPassword.passwordNueva)           e.passwordNueva = 'Requerido';
+    if (!formPassword.passwordNueva) e.passwordNueva = 'Requerido';
     else if (formPassword.passwordNueva.length < 6) e.passwordNueva = 'Mínimo 6 caracteres';
     if (formPassword.passwordNueva !== formPassword.confirmar)
       e.confirmar = 'Las contraseñas no coinciden';
@@ -116,13 +116,13 @@ const MiPerfilScreen = () => {
     setSaving(true);
     try {
       await usuarioService.actualizar(usuarioCompleto.id, {
-        nombre:          usuarioCompleto.nombre,
-        apellido:        usuarioCompleto.apellido,
-        email:           usuarioCompleto.email,
+        nombre: usuarioCompleto.nombre,
+        apellido: usuarioCompleto.apellido,
+        email: usuarioCompleto.email,
         numeroDocumento: usuarioCompleto.numeroDocumento,
-        tipoDocumento:   usuarioCompleto.tipoDocumento,
-        roles:           usuarioCompleto.roles,
-        password:        formPassword.passwordNueva,
+        tipoDocumento: usuarioCompleto.tipoDocumento,
+        roles: usuarioCompleto.roles,
+        password: formPassword.passwordNueva,
       });
       setPasswordModal(false);
     } catch (error) {
@@ -139,8 +139,8 @@ const MiPerfilScreen = () => {
     try {
       const payload = {
         ...datosAdicionales,
-        telefonoPadre:     formFamilia.telefonoPadre,
-        telefonoMadre:     formFamilia.telefonoMadre,
+        telefonoPadre: formFamilia.telefonoPadre,
+        telefonoMadre: formFamilia.telefonoMadre,
         telefonoAcudiente: formFamilia.telefonoAcudiente,
       };
       if (datosAdicionales?.id) {
@@ -165,8 +165,8 @@ const MiPerfilScreen = () => {
     </View>
   );
 
-  const nombre    = usuarioCompleto?.nombre   || '';
-  const apellido  = usuarioCompleto?.apellido || '';
+  const nombre = usuarioCompleto?.nombre || '';
+  const apellido = usuarioCompleto?.apellido || '';
   const iniciales = `${nombre[0] || ''}${apellido[0] || ''}`.toUpperCase();
   const rolesTexto = (usuarioCompleto?.roles || user?.roles || [])
     .map(r => typeof r === 'string' ? r : r.nombre).join(', ') || '—';
@@ -208,11 +208,11 @@ const MiPerfilScreen = () => {
 
         {/* Datos personales — solo lectura */}
         <Section title="Datos Personales" icon="person-outline">
-          <DataRow label="Nombre"              value={usuarioCompleto?.nombre}          icon="person-outline" />
-          <DataRow label="Apellido"            value={usuarioCompleto?.apellido}        icon="person-outline" />
-          <DataRow label="Tipo de documento"   value={usuarioCompleto?.tipoDocumento}   icon="card-outline" />
+          <DataRow label="Nombre" value={usuarioCompleto?.nombre} icon="person-outline" />
+          <DataRow label="Apellido" value={usuarioCompleto?.apellido} icon="person-outline" />
+          <DataRow label="Tipo de documento" value={usuarioCompleto?.tipoDocumento} icon="card-outline" />
           <DataRow label="Número de documento" value={usuarioCompleto?.numeroDocumento} icon="card-outline" />
-          <DataRow label="Email"               value={usuarioCompleto?.email}           icon="mail-outline" />
+          <DataRow label="Email" value={usuarioCompleto?.email} icon="mail-outline" />
         </Section>
 
         {/* Contraseña — editable */}
@@ -233,13 +233,13 @@ const MiPerfilScreen = () => {
 
         {/* Información adicional — solo lectura */}
         <Section title="Información Adicional" icon="information-circle-outline">
-          <DataRow label="Teléfono"           value={datosAdicionales?.telefono}        icon="call-outline" />
-          <DataRow label="Dirección"           value={datosAdicionales?.direccion}       icon="location-outline" />
-          <DataRow label="Ciudad"              value={datosAdicionales?.ciudad}          icon="business-outline" />
+          <DataRow label="Teléfono" value={datosAdicionales?.telefono} icon="call-outline" />
+          <DataRow label="Dirección" value={datosAdicionales?.direccion} icon="location-outline" />
+          <DataRow label="Ciudad" value={datosAdicionales?.ciudad} icon="business-outline" />
           <DataRow label="Fecha de nacimiento" value={datosAdicionales?.fechaNacimiento} icon="calendar-outline" />
-          <DataRow label="Género"              value={datosAdicionales?.genero}          icon="transgender-outline" />
-          <DataRow label="EPS"                 value={datosAdicionales?.eps}             icon="medical-outline" />
-          <DataRow label="Tipo de sangre"      value={datosAdicionales?.tipoSangre}      icon="water-outline" />
+          <DataRow label="Género" value={datosAdicionales?.genero} icon="transgender-outline" />
+          <DataRow label="EPS" value={datosAdicionales?.eps} icon="medical-outline" />
+          <DataRow label="Tipo de sangre" value={datosAdicionales?.tipoSangre} icon="water-outline" />
         </Section>
 
         {/* Familia — solo teléfonos editables */}
@@ -249,11 +249,11 @@ const MiPerfilScreen = () => {
           onEdit={openFamiliaModal}
           editLabel="Actualizar teléfonos"
         >
-          <DataRow label="Nombre del padre"  value={datosAdicionales?.nombrePadre}      icon="man-outline" />
-          <DataRow label="Teléfono padre"    value={datosAdicionales?.telefonoPadre}    icon="call-outline" />
-          <DataRow label="Nombre de la madre" value={datosAdicionales?.nombreMadre}     icon="woman-outline" />
-          <DataRow label="Teléfono madre"    value={datosAdicionales?.telefonoMadre}    icon="call-outline" />
-          <DataRow label="Acudiente"         value={datosAdicionales?.acudiente}        icon="person-outline" />
+          <DataRow label="Nombre del padre" value={datosAdicionales?.nombrePadre} icon="man-outline" />
+          <DataRow label="Teléfono padre" value={datosAdicionales?.telefonoPadre} icon="call-outline" />
+          <DataRow label="Nombre de la madre" value={datosAdicionales?.nombreMadre} icon="woman-outline" />
+          <DataRow label="Teléfono madre" value={datosAdicionales?.telefonoMadre} icon="call-outline" />
+          <DataRow label="Acudiente" value={datosAdicionales?.acudiente} icon="person-outline" />
           <DataRow label="Teléfono acudiente" value={datosAdicionales?.telefonoAcudiente} icon="call-outline" />
         </Section>
 
@@ -285,35 +285,58 @@ const MiPerfilScreen = () => {
 
               {/* Requisitos visuales */}
               <View style={styles.requisitos}>
+
+                {/* Mínimo 8 caracteres */}
                 <View style={styles.requisitoRow}>
                   <Ionicons
-                    name={formPassword.passwordNueva.length >= 8
-                      ? 'checkmark-circle' : 'ellipse-outline'}
+                    name={formPassword.passwordNueva.length >= 8 ? 'checkmark-circle' : 'ellipse-outline'}
                     size={14}
                     color={formPassword.passwordNueva.length >= 8 ? '#16a34a' : colors.gray[300]}
                   />
-                  <Text style={[styles.requisitoText,
-                    formPassword.passwordNueva.length >= 8 && styles.requisitoOk]}>
+                  <Text style={[styles.requisitoText, formPassword.passwordNueva.length >= 8 && styles.requisitoOk]}>
                     Mínimo 8 caracteres
                   </Text>
                 </View>
+
+                {/* Al menos una mayúscula */}
                 <View style={styles.requisitoRow}>
                   <Ionicons
-                    name={formPassword.passwordNueva &&
-                      formPassword.passwordNueva === formPassword.confirmar
+                    name={/[A-Z]/.test(formPassword.passwordNueva) ? 'checkmark-circle' : 'ellipse-outline'}
+                    size={14}
+                    color={/[A-Z]/.test(formPassword.passwordNueva) ? '#16a34a' : colors.gray[300]}
+                  />
+                  <Text style={[styles.requisitoText, /[A-Z]/.test(formPassword.passwordNueva) && styles.requisitoOk]}>
+                    Al menos una mayúscula
+                  </Text>
+                </View>
+
+                {/* Al menos un carácter especial */}
+                <View style={styles.requisitoRow}>
+                  <Ionicons
+                    name={/[!@#$%^&*(),.?":{}|<>]/.test(formPassword.passwordNueva) ? 'checkmark-circle' : 'ellipse-outline'}
+                    size={14}
+                    color={/[!@#$%^&*(),.?":{}|<>]/.test(formPassword.passwordNueva) ? '#16a34a' : colors.gray[300]}
+                  />
+                  <Text style={[styles.requisitoText, /[!@#$%^&*(),.?":{}|<>]/.test(formPassword.passwordNueva) && styles.requisitoOk]}>
+                    Mínimo un carácter especial (@, #, $, etc.)
+                  </Text>
+                </View>
+
+                {/* Las contraseñas coinciden */}
+                <View style={styles.requisitoRow}>
+                  <Ionicons
+                    name={formPassword.passwordNueva && formPassword.passwordNueva === formPassword.confirmar
                       ? 'checkmark-circle' : 'ellipse-outline'}
                     size={14}
-                    color={formPassword.passwordNueva &&
-                      formPassword.passwordNueva === formPassword.confirmar
+                    color={formPassword.passwordNueva && formPassword.passwordNueva === formPassword.confirmar
                       ? '#16a34a' : colors.gray[300]}
                   />
                   <Text style={[styles.requisitoText,
-                    formPassword.passwordNueva &&
-                    formPassword.passwordNueva === formPassword.confirmar &&
-                    styles.requisitoOk]}>
+                  formPassword.passwordNueva && formPassword.passwordNueva === formPassword.confirmar && styles.requisitoOk]}>
                     Las contraseñas coinciden
                   </Text>
                 </View>
+
               </View>
 
               {passwordErrors.general && (
@@ -380,17 +403,17 @@ const MiPerfilScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container:       { flex: 1, backgroundColor: colors.gray[50] },
+  container: { flex: 1, backgroundColor: colors.gray[50] },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText:     { marginTop: spacing.md, fontSize: fontSize.base, color: colors.gray[600] },
+  loadingText: { marginTop: spacing.md, fontSize: fontSize.base, color: colors.gray[600] },
 
   header: {
     backgroundColor: colors.white, flexDirection: 'row', alignItems: 'center',
     padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.gray[200],
   },
-  backButton:    { marginRight: spacing.md },
-  headerTitle:   { flex: 1 },
-  headerText:    { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
+  backButton: { marginRight: spacing.md },
+  headerTitle: { flex: 1 },
+  headerText: { fontSize: fontSize.xl, fontWeight: 'bold', color: colors.gray[900] },
   headerSubtext: { fontSize: fontSize.sm, color: colors.gray[600], marginTop: 2 },
 
   content: { flex: 1 },
@@ -406,9 +429,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[600],
     justifyContent: 'center', alignItems: 'center', marginBottom: spacing.md,
   },
-  avatarText:   { fontSize: 32, fontWeight: '800', color: colors.white },
+  avatarText: { fontSize: 32, fontWeight: '800', color: colors.white },
   avatarNombre: { fontSize: fontSize.xl, fontWeight: '700', color: colors.gray[900] },
-  avatarEmail:  { fontSize: fontSize.sm, color: colors.gray[500], marginTop: 4 },
+  avatarEmail: { fontSize: fontSize.sm, color: colors.gray[500], marginTop: 4 },
   rolBadge: {
     marginTop: spacing.sm, backgroundColor: colors.primary[50],
     paddingHorizontal: spacing.md, paddingVertical: spacing.xs,
@@ -430,7 +453,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: colors.gray[100],
   },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  sectionTitle:    { fontSize: fontSize.base, fontWeight: '700', color: colors.gray[900] },
+  sectionTitle: { fontSize: fontSize.base, fontWeight: '700', color: colors.gray[900] },
   editBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: spacing.sm, paddingVertical: spacing.xs,
@@ -445,10 +468,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: colors.gray[50],
   },
   dataLabelContainer: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, flex: 1 },
-  dataLabel:  { fontSize: fontSize.sm, color: colors.gray[500] },
-  dataValue:  { fontSize: fontSize.sm, fontWeight: '500', color: colors.gray[800], flex: 1, textAlign: 'right' },
+  dataLabel: { fontSize: fontSize.sm, color: colors.gray[500] },
+  dataValue: { fontSize: fontSize.sm, fontWeight: '500', color: colors.gray[800], flex: 1, textAlign: 'right' },
 
-  passwordRow:  { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
+  passwordRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
   passwordText: { fontSize: fontSize.lg, color: colors.gray[400], letterSpacing: 3 },
   passwordHint: { fontSize: fontSize.xs, color: colors.gray[400], marginTop: 2 },
 
@@ -464,8 +487,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.gray[200],
   },
-  modalTitle:  { fontSize: fontSize.lg, fontWeight: '700', color: colors.gray[900] },
-  modalBody:   { padding: spacing.lg },
+  modalTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.gray[900] },
+  modalBody: { padding: spacing.lg },
   modalFooter: {
     flexDirection: 'row', gap: spacing.md,
     padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.gray[200],
@@ -477,10 +500,10 @@ const styles = StyleSheet.create({
   },
   modalInfoText: { flex: 1, fontSize: fontSize.xs, color: colors.primary[700] },
 
-  requisitos:    { gap: spacing.xs, marginBottom: spacing.md },
-  requisitoRow:  { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  requisitos: { gap: spacing.xs, marginBottom: spacing.md },
+  requisitoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   requisitoText: { fontSize: fontSize.xs, color: colors.gray[400] },
-  requisitoOk:   { color: '#16a34a', fontWeight: '500' },
+  requisitoOk: { color: '#16a34a', fontWeight: '500' },
 
   errorBanner: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.xs,

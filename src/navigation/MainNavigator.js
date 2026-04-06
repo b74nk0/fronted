@@ -21,6 +21,10 @@ import ConfigGradosScreen from '../screens/admin/config/ConfigGradosScreen';
 import ConfigRolesScreen from '../screens/admin/config/ConfigRolesScreen';
 import ConfigTiposDocumentoScreen from '../screens/admin/config/ConfigTiposDocumentoScreen';
 import ConfigGeneralScreen from '../screens/admin/config/ConfigGeneralScreen';
+import ConfigCertificadosScreen from '../screens/admin/config/ConfigCertificadosScreen';
+
+// Screens - Certificates
+import CertificadosScreen from '../screens/certificates/CertificadosScreen';
 
 // Screens - Académico
 import GestionAcademicaScreen from '../screens/academic/GestionAcademicaScreen';
@@ -156,6 +160,8 @@ const MainNavigator = () => {
             options={{ drawerItemStyle: { display: 'none' }, title: 'Tipos de Documento' }} />
           <Drawer.Screen name="ConfigGeneral" component={ConfigGeneralScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Configuración General' }} />
+          <Drawer.Screen name="ConfigCertificados" component={ConfigCertificadosScreen}
+            options={{ drawerItemStyle: { display: 'none' }, title: 'Configurar Certificados' }} />
           <Drawer.Screen name="ReporteNotas" component={ReporteNotasAdminScreen}
             options={{ drawerItemStyle: { display: 'none' }, title: 'Reporte de Notas' }} />
         </>
@@ -182,7 +188,7 @@ const MainNavigator = () => {
         <>
           <Drawer.Screen name="MisPensiones" component={MisPensionesScreen}
             options={{ title: 'Matrícula y Finanzas', drawerIcon: ({ color, size }) => <Ionicons name="cash" size={size} color={color} /> }} />
-          <Drawer.Screen name="Certificados" component={DocumentacionScreen}
+          <Drawer.Screen name="Certificados" component={CertificadosScreen}
             options={{ title: 'Certificados', drawerIcon: ({ color, size }) => <Ionicons name="ribbon" size={size} color={color} /> }} />
           <Drawer.Screen name="Docentes" component={DocentesScreen}
             options={{ title: 'Docentes', drawerIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} /> }} />
