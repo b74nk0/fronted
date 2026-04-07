@@ -24,7 +24,7 @@ import ConfigGeneralScreen from '../screens/admin/config/ConfigGeneralScreen';
 import ConfigCertificadosScreen from '../screens/admin/config/ConfigCertificadosScreen';
 
 // Screens - Certificates
-import CertificadosScreen from '../screens/certificates/CertificadosScreen';
+import CertificadosScreen from '../screens/certificados/CertificadosScreen';
 
 // Screens - Académico
 import GestionAcademicaScreen from '../screens/academic/GestionAcademicaScreen';
