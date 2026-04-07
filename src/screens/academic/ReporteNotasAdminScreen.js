@@ -59,13 +59,19 @@ const ReporteNotasAdminScreen = () => {
   const cargarEstudiantesYNotas = async () => {
     if (!cursoSeleccionado || !periodoSeleccionado) return;
 
+    console.log('📚 Cargando estudiantes y notas...');
+    console.log('  - Curso:', cursoSeleccionado.id, cursoSeleccionado.nombre);
+    console.log('  - Período:', periodoSeleccionado.id, periodoSeleccionado.nombre);
+
     setLoading(true);
     try {
       // Cargar estudiantes del curso
+      console.log('📋 Llamando a listarPorCursoYPeriodo...');
       const estudiantesData = await estudianteCursoService.listarPorCursoYPeriodo(
         cursoSeleccionado.id,
         periodoSeleccionado.id
       );
+      console.log('✅ Estudiantes recibidos:', estudiantesData);
       const estudiantesArray = Array.isArray(estudiantesData) ? estudiantesData : [];
       setEstudiantes(estudiantesArray);
 
@@ -73,18 +79,23 @@ const ReporteNotasAdminScreen = () => {
       const notasMap = {};
       for (const est of estudiantesArray) {
         try {
+          console.log('📝 Obteniendo notas para estudiante:', est.estudiante?.id, est.estudiante?.nombre);
           const notasEst = await notaService.obtenerPorEstudianteYPeriodo(
             est.estudiante?.id,
             periodoSeleccionado.id
           );
+          console.log('  Notas recibidas:', notasEst);
           notasMap[est.estudiante?.id] = Array.isArray(notasEst) ? notasEst : [];
         } catch (e) {
+          console.error('  Error obteniendo notas:', e);
           notasMap[est.estudiante?.id] = [];
         }
       }
       setNotasPorEstudiante(notasMap);
+      console.log('📊 Total estudiantes:', estudiantesArray.length);
+      console.log('📊 Total notas cargadas:', Object.keys(notasMap).length);
     } catch (e) {
-      console.error('Error cargando datos:', e);
+      console.error('❌ Error cargando datos:', e);
     } finally {
       setLoading(false);
     }

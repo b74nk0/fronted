@@ -56,19 +56,19 @@ const MODULOS = [
         screen: 'Asistencia',
         description: 'Control de asistencia diaria por curso',
       },
+      {
+        title: 'Compendio de Notas',
+        icon: 'stats-chart',
+        color: '#0891b2',
+        screen: 'ReporteNotas',
+        description: 'Ver notas, promedios y boletines por curso',
+      },
     ],
   },
   {
     seccion: 'Próximamente',
     descripcion: 'Módulos en desarrollo',
     items: [
-      {
-        title: 'Calificaciones y Boletines',
-        icon: 'stats-chart',
-        color: '#0891b2',
-        screen: null,
-        description: 'Notas, promedios y generación de boletines',
-      },
       {
         title: 'Horarios',
         icon: 'calendar',
