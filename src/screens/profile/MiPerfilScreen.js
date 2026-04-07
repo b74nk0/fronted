@@ -356,7 +356,6 @@ const MiPerfilScreen = () => {
           </View>
         </View>
       </Modal>
-
       {/* ── Modal actualizar teléfonos familia ───────────────────────────────── */}
       <Modal visible={familiaModal} transparent animationType="fade"
         onRequestClose={() => setFamiliaModal(false)}>
