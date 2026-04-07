@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, RefreshControl, Modal,
+  TouchableOpacity, RefreshControl, Modal, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import { cursoService } from '../../services/cursoService';
 import { notaService } from '../../services/notaService';
 import { periodoService } from '../../services/periodoService';
 import { estudianteCursoService } from '../../services/estudianteCursoService';
+import { certificadoService } from '../../services/certificadoService';
 
 const ReporteNotasAdminScreen = () => {
   const [cursos, setCursos] = useState([]);
@@ -455,9 +456,24 @@ const ReporteNotasAdminScreen = () => {
             <View style={styles.modalFooter}>
               <TouchableOpacity
                 style={styles.exportButton}
-                onPress={() => {
-                  // TODO: Exportar PDF
-                  alert('Funcionalidad de exportación en desarrollo');
+                onPress={async () => {
+                  try {
+                    const pdfData = await certificadoService.adminGenerarCertificadoNotas(
+                      estudianteSeleccionado.id,
+                      periodoSeleccionado?.id
+                    );
+                    certificadoService.descargarPDF(pdfData, 'boletin_notas.pdf');
+                  } catch (error) {
+                    console.error('Error generando boletín:', error);
+                    // Intentar obtener mensaje de error del response
+                    let errorMsg = 'No se pudo generar el boletín. Intenta nuevamente.';
+                    if (error.response) {
+                      const errorData = new TextDecoder().decode(error.response.data);
+                      console.error('Error del servidor:', errorData);
+                      errorMsg = `Error del servidor: ${error.status || error.response.status} - ${errorData}`;
+                    }
+                    Alert.alert('Error', errorMsg);
+                  }
                 }}
               >
                 <Ionicons name="download" size={20} color={colors.white} />

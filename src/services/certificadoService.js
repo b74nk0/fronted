@@ -55,6 +55,14 @@ export const certificadoService = {
     return response.data;
   },
 
+  adminGenerarCertificadoNotas: async (estudianteId, periodoId = null) => {
+    const params = periodoId ? `?periodoId=${periodoId}` : '';
+    const response = await api.get(`/certificados/admin/notas/${estudianteId}${params}`, {
+      responseType: 'arraybuffer',
+    });
+    return response.data;
+  },
+
   // Helper para descargar PDF
   descargarPDF: (data, filename) => {
     const blob = new Blob([data], { type: 'application/pdf' });
